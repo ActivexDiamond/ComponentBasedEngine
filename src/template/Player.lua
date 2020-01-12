@@ -1,6 +1,7 @@
 local class = require "libs.cruxclass"
-local Mob = require "template.Mob"
+local Entity = require "template.Entity"
 local IHealth = require "behavior.IHealth"
+local MultiState = require "core.MultiState"
 
 local IEventHandler = require "evsys.IEventHandler"
 local KeypressEvent = require "evsys.input.KeypressEvent"
@@ -9,19 +10,124 @@ local Keybinds  = require "core.Keybinds"
 local Game = require "core.Game"
 --local Registry = require "istats.Registry"
 
+---Helper Methods
+local function sign(x)
+	return x > 0 and 1 or x < 0 and -1 or 0
+end
+local function reqF(s, v, m, dt)
+	local x = s - v;	
+	if (0 > s and s > v) or (0 < s and s < v) then x = 0 end
+	local a = x/dt
+	local f = a*m
+	return f
+end
 
------------------------------- Constructor ------------------------------ 
-local Player = class("Player", Mob):include(IEventHandler)
+local function move(self, sx, sy, dt)
+	local m = self.body:getMass()
+	local vx, vy = self.body:getLinearVelocity()
+	---For an axis that is passed as nil, f = 0.
+	local fx, fy = sx and reqF(sx, vx, m, dt) or 0, sy and reqF(sy, vy, m, dt) or 0
+	self.body:applyForce(fx, fy)
+end
+--[[
+	final equation:
+		[dif] x = s - v
+		if (s neg AND s > v) OR (s pos AND s < v)
+			x = 0
+		f = toForce(x)
+		body->applyForce(f)
+
+	goal:
+	move -> vel >= speed (aka max moving velocity)
+		get current vel
+		get goal vel (speed)
+			if vel >= speed ; 
+				do nothing
+			if vel < speed ; 
+				apply enough force to accelerate 
+				to speed in 1 tick
+	=> go from 'goal velocity' (speed) to force to apply
+	
+	physics cheatsheet:
+		a = v/t
+		f = am
+		
+		f = ma
+		v = at
+		a = dv/dt ; dv = a * dt
+	
+	--------- examples --------------
+	
+	-- right
+	v = 2 ; s = 3	->	1
+	v = 4 ; s = 3	->	0
+	
+	dif: s - v
+	[3 - 2] 	1 (apply)
+	[3 - 4] 	-1 (x < v)
+	
+	-- left
+	v = -2 ; s = -3	-> -1	
+	v = -4 ; s = -3	->	0
+	
+	dif: s - v
+	[-3 - -2]	-1 (apply)
+	[-3 - -4]	1 (x > v)
+	
+	-- right TO left
+	v = 2 ; s = -3	->	-5
+	v = 4 ; s = -3	->	-7
+	
+	dif: s - v
+	[-3 - 2]	-5 (apply)
+	[-3 - 4]	-7 (apply)
+	
+	-- left TO right
+	v = -2 ; s = 3	->	5
+	v = -4 ; s = 3	->	7
+	
+	dif: s - v
+	[3 - -2]	5 (apply)
+	[3 - -4]	7 (apply)
+	
+	equation:
+		[dif] x = s - v
+		if (s neg AND s > v) OR (s pos AND s < v)
+			x = 0
+		f = toForce(x)
+		body->applyForce(f)
+--]]
+
+local function halt(self, dt)
+	local m = self.body:getMass()
+	local vx, _ = self.body:getLinearVelocity()
+	local v = -vx + vx * self.deacceleration
+	local a = v/dt
+	local f = a*m
+	self.body:applyForce(f, 0) 
+end
+
+---Constructor
+local Player = class("Player", Entity):include(IEventHandler)
 function Player:init(x, y)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
-	Mob.init(self, "player", x, y)
+	Entity.init(self, "player", x, y)
 	self.state = MultiState()
 	self.dir = Player.RIGHT	
 	self.jumpsRemaining = self.totalJumps
 	self.extraJumps = 0
 end
 
+---Constants
+Player.LEFT = -1
+Player.RIGHT = 1
 
------------------------------- Main Methods ------------------------------
+Player.MOTIONLESS, Player.MOVING,
+Player.CRAWLING, Player.WALKING, 
+Player.AIRBORNE, Player.JUMPING, 
+Player.FLYING, Player.CLIMBING = MultiState:create()
+
+
+---Main Methods
 function Player:tick(dt)
 	local k = love.keyboard
 	local vx, vy = self.body:getLinearVelocity()
@@ -58,7 +164,7 @@ function Player:tick(dt)
 	end 
 end
 
------------------------------- Movement ------------------------------
+---Movement
 function Player:_setJumpingVelocity()
 	local vx, vy = self.body:getLinearVelocity()
 	vy = self.jumpHeight * -7.5 --TODO: Use proper equation/curve.
@@ -77,7 +183,8 @@ function Player:_jump()
 	end
 end
 
------------------------------- @Callback ------------------------------
+
+---@Callback
 Player:attach(KeypressEvent, function(self, e)
 	if e.k == Keybinds.JUMP then self:_jump() end
 	

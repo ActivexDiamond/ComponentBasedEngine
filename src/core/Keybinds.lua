@@ -10,6 +10,8 @@ Keybinds.DOWN = 's'
 Keybinds.LEFT = 'a'
 Keybinds.RIGHT = 'd'
 
+Keybinds.SPRINT= 'lshift'
+
 Keybinds.JUMP = 'space'
 
 return Keybinds

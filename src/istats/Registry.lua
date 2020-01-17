@@ -107,8 +107,8 @@ function Registry.static:getBodyRestitution(id)
 end
 
 function Registry.static:getShapeType(id)
-	return self[id] and self[id].body and 
-		EShapes[self[id].body.shape or ""] or self.DEFAULT_SHAPE_TYPE
+	return (self[id] and self[id].body and 
+		EShapes[self[id].body.shape or ""]) or self.DEFAULT_SHAPE_TYPE
 end
 
 function Registry.static:getShapeDat(id)

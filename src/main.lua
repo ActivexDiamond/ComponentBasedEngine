@@ -4,12 +4,15 @@ local Game = require "core.Game"
 local Block = require "template.Block"
 local Entity = require "template.Entity"
 local Player = require "template.Player"
+local Zombie = require "template.Zombie"
 
 local Evsys = require "evsys.Evsys"
 local KeypressEvent = require "evsys.input.KeypressEvent"
 
 local blocks = {}
 local player
+local zombie, zombie1, zombie2
+
 function love.load()
 	local grid = {0, 0,
 		2, 2,
@@ -19,6 +22,15 @@ function love.load()
 		4, 4,
 --		20, 14,
 		21, 15,
+		
+		3, 8,
+		3, 10,
+		
+		3, 11,
+		3, 12,	4, 12,
+		3, 13,	4, 13,	5, 13,
+		3, 14,	4, 14,	5, 14,	6, 14,
+		3, 15,	4, 15,	5, 15,	6, 15,	7, 15,
 	}
 
 	for i = 1, 20 do
@@ -43,6 +55,9 @@ function love.load()
 	end	
 	
 	player = Player(12, 12)
+	zombie = Zombie(16, 12)
+	zombie1 = Zombie(17, 12)
+	zombie2 = Zombie(18, 12)
 end
 
 local dir = 0;
@@ -50,6 +65,9 @@ function love.update(dt)
 	Game:tick(dt)
 	
 	player:tick(dt)
+	zombie:tick(dt)
+	zombie1:tick(dt)
+	zombie2:tick(dt)
 	Evsys:poll()
 end
 
@@ -59,16 +77,15 @@ function love.draw()
 	g.scale(Game.MS)
 	
 	for _, v in ipairs(blocks) do		
-		g.setColor(1, 0, 0)
-		g.polygon('fill', v.body:getWorldPoints(v.shape:getPoints()))
+		v:draw(g)
 	end
 	
-	g.setColor(1, 1, 1, 0.5)
-	g.setColor(1, 0, 0, 0.5)
-	g.polygon('fill', player.body:getWorldPoints(player.shape:getPoints()))
+	player:draw(g)
+	zombie:draw(g)
+	zombie1:draw(g)
+	zombie2:draw(g)
 	
 	g.setColor(1, 1, 1, 1)
-	
 	g.scale(1/Game.MS)
 	local vx, vy = player.body:getLinearVelocity()
 	local str = string.format("vx: %f | vy: %f ", vx, vy) 

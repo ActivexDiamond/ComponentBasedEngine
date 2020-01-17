@@ -16,22 +16,6 @@ local function reqF(s, v, m, dt)
 	return f
 end
 
------------------------------- Constructor ------------------------------
-local Mob = class("Mob", Entity)
-function Entity:init(id, x, y)
-	Entity.init(self, id, x, y)	
-end
-
------------------------------- Constants ------------------------------
-Mob.LEFT = -1
-Mob.RIGHT = 1
-
-Mob.MOTIONLESS, Mob.MOVING,
-Mob.CRAWLING, Mob.WALKING, 
-Mob.AIRBORNE, Mob.JUMPING, 
-Mob.FLYING, Mob.CLIMBING = MultiState:create()
-
------------------------------- Movement Methods ------------------------------
 local function move(self, sx, sy, dt)
 	local m = self.body:getMass()
 	local vx, vy = self.body:getLinearVelocity()
@@ -117,5 +101,84 @@ local function halt(self, dt)
 	self.body:applyForce(f, 0) 
 end
 
-return Entity
+------------------------------ Constructor ------------------------------
+local Mob = class("Mob", Entity) --TODO: refactor out into IWalk, IJump
+function Mob:init(id, x, y)
+	Entity.init(self, id, x, y)
+	self.state = MultiState()
+	self.dir = Mob.RIGHT	
+	self.jumpsRemaining = self.totalJumps
+	self.extraJumps = 0	
+end
+
+------------------------------ Constants ------------------------------
+Mob.LEFT = -1
+Mob.RIGHT = 1
+Mob.HALT = 0
+
+Mob.MOTIONLESS, Mob.MOVING,
+Mob.CRAWLING, Mob.WALKING, 
+Mob.AIRBORNE, Mob.JUMPING, 
+Mob.FLYING, Mob.CLIMBING = MultiState:create()
+
+------------------------------ Main Methods ------------------------------
+function Mob:tick(dt)
+	local vx, vy = self.body:getLinearVelocity()
+	
+	---If mob collides with a ceiling while jumping, vy
+	--will equal 0 for one tick; rely on Jumping as a form
+	--of 'previous_vy' to differentiate that from landing.
+	local jumping = self.state:is(Mob.JUMPING)
+	local air = vy ~= 0 or jumping 
+	---If airborne state changed:
+	if self.state:set(Mob.AIRBORNE, air) then
+		--From true to false; aka just landed: recharge
+		if not air then self.jumpsRemaining = self.totalJumps end
+		--From false to true and NOT jumping; aka slipped: lose 1 jump
+		if air and not jumping then self.jumpsRemaining = self.jumpsRemaining - 1 end
+	end
+	if vy > 0 then self.state:unset(Mob.JUMPING) end
+	
+	---If moving at all:
+	if vx == 0 then self.state:set(Mob.MOTIONLESS)
+	else self.state:set(Mob.MOVING) end
+	
+	---If actively walking: Mob.WALKING is set if child calls _walk with dir ~= 0
+	self.state:unset(Mob.WALKING)  
+end
+
+------------------------------ Walk Methods ------------------------------
+function Mob:_walk(dir, sprint, dt)
+	if dir ~= Mob.HALT then	--TODO: Implement sprinting.
+		self.dir = dir
+		self.state:set(Mob.WALKING)
+		move(self, self.speed * dir, nil, dt)
+	else 
+		if self.state:isnot(Mob.AIRBORNE) then halt(self, dt) end
+		self.state:unset(Mob.WALKING) 
+	end 	
+end
+
+------------------------------ Jump Methods ------------------------------
+--- Sets the mob's velocity and JUMPING state. Does not check any conditions.
+function Mob:_setJumpingVelocity()
+	self.state:set(Mob.JUMPING)
+	local vx, vy = self.body:getLinearVelocity()
+	vy = self.jumpHeight * -7.5 --TODO: Use proper equation/curve.
+	self.body:setLinearVelocity(vx, vy)
+end
+
+--- Checks if the mob can jump, and if so, calls self:_setJumpingVelocity() to jump.
+function Mob:_jump()
+	if self.jumpsRemaining == 0 and self.extraJumps > 0 then
+		self.jumpsRemaining = self.jumpsRemaining + 1
+		self.extraJumps = self.extraJumps - 1
+	end
+	if self.jumpsRemaining > 0 then
+		self.jumpsRemaining = self.jumpsRemaining - 1
+		self:_setJumpingVelocity()
+	end
+end
+
+return Mob
 

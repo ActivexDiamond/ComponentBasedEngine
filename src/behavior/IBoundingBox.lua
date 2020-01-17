@@ -33,19 +33,21 @@ local IBoundingBox = {}
 -- @param #love.physics#World world The world to create the body in.
 -- @param #number x The x position of the bounding box (top left origin).
 -- @param #number y The y position of the bounding box (top left origin).
+-- @param #luaValue userData The value to assign to user data, if any.
 -- @param #love.physics#BodyType bodyType The type of the body; static, dynamic, or kinematic.
 -- @param #number bodyDensity Set the density of the body. If nil, uses Box2D's internal default density.
 -- @param #number bodyMass Set the mass of the body directly, ignoring size AND density. If nil, uses Box2D's internal mass computation.
 -- @param #number bodyFriction Set the friction of the body. If nil, uses Box2D's internal default friction.
 -- @param #number bodyRestitution Set the restitution of the body. If nil, uses Box2D's internal default restitution.
 -- @param #template.EShapes shapeType The shape of the body (Rect, Circle, Poly, Precise, etc...).
--- @param #number a The first paramater to pass to the shape. Rect = w; Circle = r; Poly = vertices.
--- @param #number b The second paramater to pass to the shape. Rect = h;
--- @param #number c The third paramater to pass to the shape. Rect = angle; 
-function IBoundingBox:init(world, x, y, bodyType, bodyDensity,
-			bodyMass, bodyFriction, bodyRestitution, 
+-- @param #number a The first parameter to pass to the shape. Rect = w; Circle = r; Poly = vertices.
+-- @param #number b The second parameter to pass to the shape. Rect = h;
+-- @param #number c The third parameter to pass to the shape. Rect = angle; 
+function IBoundingBox:init(world, x, y, userData,
+			bodyType, bodyDensity, bodyMass, 
+			bodyFriction, bodyRestitution, 
 			shapeType, a, b, c)
-	self.baseShapeType = shapeType
+	self.shapeType = shapeType
 	self.baseBodyDensity = bodyDensity
 	self.baseBodyFriction = bodyFriction
 	self.baseBodyRestitution = bodyRestitution
@@ -61,7 +63,8 @@ function IBoundingBox:init(world, x, y, bodyType, bodyDensity,
 	if bodyMass then
 		local x, y, m, i = self.body:getMassData()
 		self.body:setMassData(x, y, bodyMass, i * bodyMass / m)
-	end		
+	end	
+	if userData then self.fixture:setUserData(userData) end
 end
 
 ---Common position getters
@@ -88,6 +91,7 @@ end
 
 ---Rectangle data getters
 function IBoundingBox:getW()
+	print(self.shapeType)
 	assert(checkShapeDat(self.shapeType, 'w'), "getW can only be called on rectangular BoundingBoxes.")
 	return self.a
 end

@@ -1,8 +1,10 @@
 local class = require "libs.cruxclass"
 local Entity = require "template.Entity"
+
 local MultiState = require "core.MultiState"
+
 --local Game = require "core.Game"
---local Registry = require "istats.Registry"
+local Registry = require "istats.Registry"
 
 ------------------------------ Helper Methods ------------------------------
 local function sign(x)
@@ -98,13 +100,15 @@ local function halt(self, dt)
 	local v = -vx + vx * self.deacceleration
 	local a = v/dt
 	local f = a*m
-	self.body:applyForce(f, 0) 
+	self.body:applyForce(f, 0)
 end
 
 ------------------------------ Constructor ------------------------------
 local Mob = class("Mob", Entity) --TODO: refactor out into IWalk, IJump
 function Mob:init(id, x, y)
 	Entity.init(self, id, x, y)
+	Registry:applyStat(id, self, "movement")
+	Registry:applyStat(id, self, "jumping")
 	self.state = MultiState()
 	self.dir = Mob.RIGHT	
 	self.jumpsRemaining = self.totalJumps

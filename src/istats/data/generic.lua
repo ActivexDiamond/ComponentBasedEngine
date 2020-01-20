@@ -21,13 +21,12 @@ data{"mobZombie",
 
 data{"player",
 	stats = {
-		speed = 3,
-		acc = 0.25,
-		deacceleration = 0.9,
-		totalJumps = 3,
-		jumpHeight = 1.5,
-		jumpVelocityMult = 2,
-		 
+		movement = {
+			speed = 3,
+		},
+		jumping = {
+			totalJumps = 3,
+		},
 	},
 
 	body = {
@@ -40,15 +39,13 @@ data{"player",
 
 data{"zombie",
 	stats = {
-		speed = 1.5,
-		acc = 0.5,
-		deacceleration = 0.9,
-		totalJumps = 1,
-		jumpHeight = 1.5,
-		jumpVelocityMult = 2,
-		 
+		movement = {
+			speed = 1.5,
+		},
+		jumping = {
+			totalJumps = 1,
+		},
 	},
-
 	body = {
 		w = 0.8,
 		h = 1.1,
@@ -57,3 +54,42 @@ data{"zombie",
 		shape = 'RECT'
 	},
 }
+
+data{"swordStone",
+	stats = {
+		meleeWeapon = {
+			maxDurability = 50,
+			cooldown = 2,
+			damage = 5,
+		},
+	},
+}
+
+data{"swordIron",
+	stats = {
+		meleeWeapon = {		
+			maxDurability = 250,
+			cooldown = 2,
+			damage = 15,
+		},
+	},
+}
+
+data{"spearStone",
+	stats = {
+		meleeWeapon = {	
+			maxDurability = 50,
+			cooldown = 2,
+			damage = 5,
+			hitbox = {
+				{
+					anchor = WeaponDef.CENTER_ALIGNED,
+--					transition = WeaponDef.INSTANT,	--- skipped for last phase
+					dur = 15,
+					area = {0, 0, 0.1, 2},
+				},
+			},
+		},
+	},
+}
+

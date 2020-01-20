@@ -1,6 +1,9 @@
 local class = require "libs.cruxclass"
+
 local FilepathUtils = require "utils.FilepathUtils"
 local EShapes = require "behavior.EShapes"
+local WeaponDef = require "template.WeaponDef"
+
 local Game = require "core.Game"
 
 local Registry = class("Registry")
@@ -37,18 +40,57 @@ end
 
 ---Data
 _G.data = data
+_G.WeaponDef = WeaponDef
 loadAllData()
 _G.data = nil
+_G.WeaponDef = nil
+
+--- Mutable Defaults
+Registry.DEFAULT_STATS = {}
+
+Registry.DEFAULT_STATS.movement = {
+	speed = 3,
+	acc = 0.25,
+	deacceleration = 0.9,
+}
+Registry.DEFAULT_STATS.jumping = {
+	totalJumps = 1,
+	jumpHeight = 1.5,
+	jumpVelocityMult = 2,
+}
+
+--TODO: Upgrade melee-weapon phases to allow altering of all stats not just hitbox.
+Registry.DEFAULT_STATS.meleeWeapon = {
+	maxDurability = 100,
+	cooldown = 5,
+
+	--TODO: Move hit-related stats to sub-table.
+	damage = 10,
+	effects = {},
+	reHit = 0,
+	hitbox = {
+		{
+			anchor = WeaponDef.CENTER_ALIGNED,
+--			transition = WeaponDef.INSTANT,	--- skipped for last phase
+			dur = 10,
+			area = {0, 0, 0.1, 1},
+		},
+	},
+}
 
 --- Mutables
-function Registry.static:applyStats(id, inst)
-	if self[id] and self[id].stats then
-		for k, v in pairs(self[id].stats) do
-			inst[k] = v
-		end
-		return next(self[id].stats) ~= nil
-	end 
-	return false
+function Registry.static:applyStat(id, inst, stat)
+	local applied = false
+	if self.DEFAULT_STATS[stat] then	--Apply defaults
+		for k, v in pairs(self.DEFAULT_STATS[stat]) do inst[k] = v end
+		applied = true
+	end
+			
+	if self[id] and self[id].stats and self[id].stats[stat] then	--Apply idata
+		for k, v in pairs(self[id].stats[stat]) do inst[k] = v end
+		applied = true
+	end
+	return applied
 end
 
 

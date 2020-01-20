@@ -58,6 +58,27 @@ function love.load()
 	zombie = Zombie(16, 12)
 	zombie1 = Zombie(17, 12)
 	zombie2 = Zombie(18, 12)
+	
+	print(4.3 / 2)
+	print(4.3 % 2)
+	print()
+	
+	print(math.modf(4.3 / 2))
+	print(math.modf(4.3), math.modf(2))
+	print()
+	
+	print(math.fmod(4.3, 2))
+	print()
+	
+	print(math.floor(4.3))
+	print(math.floor(2))
+	print(math.floor(4.3 / 2))
+	print()
+	
+	print(math.ceil(4.3))
+	print(math.ceil(2))
+	print(math.ceil(4.3 / 2))
+	print()
 end
 
 local dir = 0;

@@ -5,7 +5,7 @@ local Registry = require "istats.Registry"
 local Thing = class("Thing")
 function Thing:init(id)
 	self.id = id
-	Registry:applyStats(id, self)
+--	Registry:applyStats(id, self)
 end
 
 ------------------------------ Abstract Methods ------------------------------

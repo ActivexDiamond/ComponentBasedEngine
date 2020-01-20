@@ -1,7 +1,7 @@
-local Mixins = require "libs.Mixins"
+--local Mixins = require "libs.Mixins"
 local EShapes = require "behavior.EShapes"
 
----Private Methods
+------------------------------ Private Methods ------------------------------
 local function getShape(s, a, b, c)
 	local p, e, f = love.physics, EShapes
 	
@@ -26,7 +26,7 @@ local function checkShapeDat(st, d)
 	return false
 end
 
----Constructor
+------------------------------ Constructor ------------------------------
 local IBoundingBox = {}
 --- @function [parent=#behavior.IBoundingBox] init Construct a new BoundingBox.
 -- @param #object self An object of the class IBoundingBox was included on.
@@ -67,21 +67,22 @@ function IBoundingBox:init(world, x, y, userData,
 	if userData then self.fixture:setUserData(userData) end
 end
 
----Common position getters
+------------------------------ Common Position Getters ------------------------------
 function IBoundingBox:getX() return self.body:getX() end
 function IBoundingBox:getY() return self.body:getY() end
 function IBoundingBox:getPos() return self.body:getX(), self.body:getY() end
 
----Common position setters
+------------------------------ Common Position Setters ------------------------------
 function IBoundingBox:setX(x) self.body:setX(x) end
 function IBoundingBox:setY(y) self.body:setY(y) end
 function IBoundingBox:setPos(x, y) self:setX(x); self:setY(y) end
 
----Body data getters
+------------------------------ Body Data Getters ------------------------------
 function IBoundingBox:isFixedRotation()
 	return self.body:isFixedRotation()
 end
----Body data setters
+
+------------------------------ Body Data Setters ------------------------------
 function IBoundingBox:setFixedRotation(r)
 	local x, y, m, i = self.body:getMassData()
 	self.body:setFixedRotation(r)
@@ -89,9 +90,8 @@ function IBoundingBox:setFixedRotation(r)
 	self.body:setMassData(x, y, m, i * m / curM)
 end
 
----Rectangle data getters
+------------------------------ Rectangle Data Getters ------------------------------
 function IBoundingBox:getW()
-	print(self.shapeType)
 	assert(checkShapeDat(self.shapeType, 'w'), "getW can only be called on rectangular BoundingBoxes.")
 	return self.a
 end
@@ -114,7 +114,7 @@ function IBoundingBox:getDims()
 	return self.a, self.b --, self.c or 0
 end
 
----Rectangle data setters
+------------------------------ Rectangle Data Setters ------------------------------
 function IBoundingBox:setW(w)
 	assert(checkShapeDat(self.shapeType, 'w'), "getW can only be called on rectangular BoundingBoxes.")
 	self.a = w; self:reshape()
@@ -136,7 +136,7 @@ function IBoundingBox:setDims(w, h, a)
 	self.a, self.b, self.c = w, h, a; self:reshape()
 end
 
----Circle data getters
+------------------------------ Circle Data Getters ------------------------------
 function IBoundingBox:getRadius()
 	assert(checkShapeDat(self.shapeType, 'r'), "getRadius can only be called on circular BoundingBoxes.")
 	return self.a
@@ -146,19 +146,19 @@ function IBoundingBox:getDiameter()
 	return self:getRadius() * 2
 end
 
----Circle data setters
+------------------------------ Circle Data Setters ------------------------------
 function IBoundingBox:setRadius(r)
 	assert(checkShapeDat(self.shapeType, 'r'), "getRadius can only be called on circular BoundingBoxes.")
 	self.a = r; self:reshape()
 end
 
----Helper methods
+------------------------------ Helper Methods ------------------------------
 function IBoundingBox:_reshape()
 	--TODO: Test; see if fixture requires refreshing too.
 	self.s = getShape(self.shapeType, self.a, self.b, self.c)
 end
 
----Object-common methods
+------------------------------ Object-common Methods ------------------------------
 function IBoundingBox:clone()
 	return IBoundingBox(self.x, self.y, self.body:getType(), 
 		self.shapeType, self.a, self.b, self.c)

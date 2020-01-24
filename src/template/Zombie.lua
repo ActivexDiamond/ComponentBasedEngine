@@ -1,6 +1,7 @@
 local class = require "libs.cruxclass"
 local Mob = require "template.Mob"
 local IHealth = require "behavior.IHealth"
+local IBoundingBox = require "behavior.IBoundingBox"
 
 local MathUtils = require "libs.MathUtils"
 
@@ -30,7 +31,10 @@ end
 local Zombie = class("Zombie", Mob):include(IHealth)
 function Zombie:init(x, y)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
 	Mob.init(self, "zombie", x, y)
+	self:addCategory(IBoundingBox.categories.HOSTILE_MOB)
+	self:addMask(IBoundingBox.categories.PLAYER)
 	self.path = Mob.LEFT
+	print(self.fixture:getFilterData())
 end
 
 ------------------------------ Main Methods ------------------------------

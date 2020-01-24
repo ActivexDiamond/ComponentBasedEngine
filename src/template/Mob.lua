@@ -1,5 +1,6 @@
 local class = require "libs.cruxclass"
 local Entity = require "template.Entity"
+local IBoundingBox = require "behavior.IBoundingBox"
 
 local MultiState = require "core.MultiState"
 
@@ -107,6 +108,8 @@ end
 local Mob = class("Mob", Entity) --TODO: refactor out into IWalk, IJump
 function Mob:init(id, x, y)
 	Entity.init(self, id, x, y)
+	self:addCategory(IBoundingBox.categories.MOB)
+	
 	Registry:applyStat(id, self, "movement")
 	Registry:applyStat(id, self, "jumping")
 	self.state = MultiState()

@@ -5,6 +5,9 @@ local WeaponDef = require "template.WeaponDef"
 local Scheduler = require "utils.Scheduler"
 local Game = require "core.Game"
 
+------------------------------ Upvalues ------------------------------
+local onCollision;
+
 ------------------------------ Helper Methods ------------------------------
 local function lerp(t, a, b)
 	return a * (1 - t) + b * t
@@ -19,6 +22,11 @@ local function lerpArea(t, a, b)
 	return {x, y, w, h}
 end
 
+--TODO: refactor into the abstraction layer for Box2D.
+local function box2dWrapper(func, ...)
+	local args = {...}
+	return function(fixt) func(fixt, unpack(args)) end
+end
 
 ------------------------------ Setup ------------------------------
 local IMeleeAttack = {}
@@ -48,27 +56,31 @@ local function alignCoords(self, anchor, area)
 end
 
 ------------------------------ Transition Runners ------------------------------
+local function checkCollision(self, bb, wpn)
+	Game.world:queryBoundingBox(bb[1], bb[2], bb[3], bb[4], 
+			box2dWrapper(onCollision, self, wpn))
+			
+	if DEBUG.BOUNDING_BOXES then
+		local g = love.graphics
+		g.setColor(1, 1, 1, 1)
+		g.rectangle('fill', unpack(bb))
+	end
+end
+
 local function transInstant(dt, per, self, wpn, prevAnchor, prevArea, anchor, area, dur, freq)
 	prevArea = alignCoords(self, prevAnchor, prevArea)
 	area = alignCoords(self, anchor, area)
-	local g = love.graphics
+	local bb = area
 	
-	g.setColor(1, 1, 1, 1)
-	g.rectangle('fill', area[1], area[2], area[3], area[4])
+	checkCollision(self, bb, wpn)
 end
 
 local function transLinearGrow(dt, per, self, wpn, prevAnchor, prevArea, anchor, area, dur, freq)
 	prevArea = alignCoords(self, prevAnchor, prevArea)
 	area = alignCoords(self, anchor, area)
 	local bb = lerpArea(per, prevArea, area)
-	local g = love.graphics
 	
-	g.setColor(1, 1, 1, 1)
-	g.rectangle('fill', bb[1], bb[2], bb[3], bb[4])
-	
---	g.setColor(0.3, 0.3, 0.3, 1)
---	g.rectangle('fill', prevArea[1], prevArea[2], prevArea[3], prevArea[4])
---	print('dt', dt)	
+	checkCollision(self, bb, wpn)
 end
 
 ------------------------------ Main Methods ------------------------------
@@ -78,7 +90,7 @@ local function onHit()
 end
 
 ---Passed to Box2D as callback; filters collision to hittable mobs only.
-local function onCollision()
+local function onCollision(self, fixt,  wpn)
 	
 end
 	
@@ -90,10 +102,7 @@ local function schedulePhase(self, wpn, i)
 	local bx, prevAnchor, prevArea = wpn.hitbox
 	if i == 1 then prevAnchor, prevArea = bx.startAnchor, bx.start
 	else prevAnchor, prevArea = bx[i - 1].anchor, bx[i - 1].area end
-	print()
-	print('prevAnchor', prevAnchor, 'prevArea', prevArea)
-	print('bx.startAnchor', bx.startAnchor, 'bx.start', bx.start)
-	print()
+
 	local phase = bx[i]
 	local anchor = phase.anchor
 	local area = phase.area
@@ -104,7 +113,7 @@ local function schedulePhase(self, wpn, i)
 	local checker; 
 	if trans == WeaponDef.transitions.INSTANT then checker = transInstant
 	elseif trans == WeaponDef.transitions.LINEAR_GROW then checker = transLinearGrow end
-	print('checker', checker)
+
 	local chain;
 	if i < #bx then chain = schedulePhase
 	else chain = onAttackDone end
@@ -112,11 +121,11 @@ local function schedulePhase(self, wpn, i)
 	Scheduler:gCallEveryFor(freq, dur, checker, {self, wpn, prevAnchor, prevArea, anchor, area, dur, freq},
 			chain, {self, wpn, i + 1})
 			
-	print('-------------')
-	print('i', i, 'freq', freq, 'dur', dur, 'trans', trans)
-	print('prevAnchor', prevAnchor, 'prevArea', unpack(prevArea))
-	print('anchor', anchor, 'area', unpack(area))
-	print('-------------')
+--	print('-------------')
+--	print('i', i, 'freq', freq, 'dur', dur, 'trans', trans)
+--	print('prevAnchor', prevAnchor, 'prevArea', unpack(prevArea))
+--	print('anchor', anchor, 'area', unpack(area))
+--	print('-------------')
 end
 
 function IMeleeAttack:attack(wpn)

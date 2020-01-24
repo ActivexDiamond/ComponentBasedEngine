@@ -1,6 +1,7 @@
 local class = require "libs.cruxclass"
 local Thing = require "template.Thing"
 local IBoundingBox = require "behavior.IBoundingBox"
+
 local Game = require "core.Game"
 local Registry = require "istats.Registry"
 
@@ -18,7 +19,8 @@ function WorldObj:init(id, x, y, bodyType, angle)
 		Registry:getShapeType(id), a, b, angle)
 	self:setFixedRotation(true)
 	
-	
+	self:setCategory(IBoundingBox.categories.WORLD_OBJ)
+	self:setMask(IBoundingBox.categories.WORLD_OBJ)
 end
 
 return WorldObj

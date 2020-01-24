@@ -17,6 +17,10 @@ local player
 local zombie, zombie1, zombie2
 
 function love.load()
+
+	DEBUG = {}
+--	DEBUG.BOUNDING_BOXES = true
+
 	local grid = {0, 0,
 		2, 2,
 		18, 13,
@@ -58,9 +62,9 @@ function love.load()
 	end	
 	
 	player = Player(12, 12)
---	zombie = Zombie(16, 12)
---	zombie1 = Zombie(17, 12)
---	zombie2 = Zombie(18, 12)
+	zombie = Zombie(16, 12)
+	zombie1 = Zombie(17, 12)
+	zombie2 = Zombie(18, 12)
 	
 --	local interval, total = -1, 0.5
 	local interval, total = 0.5, 5
@@ -175,9 +179,9 @@ function love.update(dt)
 	Game:tick(dt)
 	
 	player:tick(dt)
---	zombie:tick(dt)
---	zombie1:tick(dt)
---	zombie2:tick(dt)
+	zombie:tick(dt)
+	zombie1:tick(dt)
+	zombie2:tick(dt)
 	Scheduler:tick(dt)
 	Evsys:poll()
 end
@@ -194,9 +198,9 @@ function love.draw()
 	Scheduler:draw(g)
 	
 	player:draw(g)
---	zombie:draw(g)
---	zombie1:draw(g)
---	zombie2:draw(g)
+	zombie:draw(g)
+	zombie1:draw(g)
+	zombie2:draw(g)
 	
 	g.setColor(1, 1, 1, 1)
 	g.scale(1/Game.MS)

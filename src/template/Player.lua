@@ -4,6 +4,7 @@ local IHealth = require "behavior.IHealth"
 local IMeleeAttack = require "behavior.IMeleeAttack"
 
 local MeleeWeapon = require "template.MeleeWeapon"
+local IBoundingBox = require "behavior.IBoundingBox"
 
 local IEventHandler = require "evsys.IEventHandler"
 local KeypressEvent = require "evsys.input.KeypressEvent"
@@ -17,6 +18,8 @@ local Keybinds  = require "core.Keybinds"
 local Player = class("Player", Mob):include(IHealth, IEventHandler, IMeleeAttack)
 function Player:init(x, y)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
 	Mob.init(self, "player", x, y)
+	self:addCategory(IBoundingBox.categories.PLAYER)
+	self:addMask(IBoundingBox.categories.MOB)
 	self.weapon = MeleeWeapon("swordStone")
 end
 
@@ -28,7 +31,7 @@ function Player:tick(dt)
 	
 	local dir = 0
 	if k.isDown(Keybinds.LEFT) then dir = dir + Player.LEFT end
-	if k.isDown(Keybinds.RIGHT) then dir = dir + Player.RIGHT end
+	if k.isDown(Keybinds.RIGHT) then dir = dir +  Player.RIGHT end
 	local sprint = k.isDown(Keybinds.SPRINT)
 	self:_walk(dir, sprint, dt)
 end

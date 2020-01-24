@@ -67,6 +67,53 @@ function IBoundingBox:init(world, x, y, userData,
 	if userData then self.fixture:setUserData(userData) end
 end
 
+------------------------------ Constants ------------------------------
+IBoundingBox.categories = {}
+IBoundingBox.categories.WORLD_OBJ = 2
+IBoundingBox.categories.BLOCK = 4
+
+IBoundingBox.categories.ENTITY = 8
+IBoundingBox.categories.MOB = 16
+IBoundingBox.categories.PASSIVE_MOB = 32
+IBoundingBox.categories.HOSTILE_MOB = 64
+IBoundingBox.categories.NEUTRAL_MOB = 128
+
+IBoundingBox.categories.PLAYER = 256
+
+IBoundingBox.masks = {}
+IBoundingBox.masks.NONE = 0
+IBoundingBox.masks.ALL = 65535
+
+------------------------------ Categories / Mask ------------------------------
+function IBoundingBox:setCategory(c)	
+	local _, mask, group = self.fixture:getFilterData()
+	self.fixture:setFilterData(c, mask, group)
+end
+function IBoundingBox:addCategory(c)	--TODO: check if category is already assigned.
+	local cat, mask, group = self.fixture:getFilterData()
+	self.fixture:setFilterData(cat + c, mask, group)
+end
+
+function IBoundingBox:removeCategory(c)	
+	local cat, mask, group = self.fixture:getFilterData()
+	self.fixture:setFilterData(cat - c, mask, group)
+end
+
+function IBoundingBox:setMask(m)	
+	local cat, _, group = self.fixture:getFilterData()
+	self.fixture:setFilterData(cat, m, group)
+end
+
+function IBoundingBox:addMask(m)	
+	local cat, mask, group = self.fixture:getFilterData()
+	self.fixture:setFilterData(cat, mask + m, group)
+end
+
+function IBoundingBox:removeMask(m)	
+	local cat, mask, group = self.fixture:getFilterData()
+	self.fixture:setFilterData(cat, mask - m, group)
+end
+
 ------------------------------ Common Position Getters ------------------------------
 function IBoundingBox:getX() return self.body:getX() end
 function IBoundingBox:getY() return self.body:getY() end

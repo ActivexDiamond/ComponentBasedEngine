@@ -83,8 +83,8 @@ data{"spearStone",
 			damage = 5,
 			hitbox = {
 				{
-					anchor = Weapon.CENTER_ALIGNED,
---					transition = Weapon.INSTANT,	--- skipped for last phase
+					anchor = WeaponDef.NATURAL,
+--					transition = WeaponDef.INSTANT,	--- skipped for last phase
 					dur = 15,
 					area = {0, 0, 0.1, 2},
 				},
@@ -93,3 +93,10 @@ data{"spearStone",
 	},
 }
 
+data{"swordStone",
+	stats = {
+		meleeWeapon = {
+			maxDurability = 50
+			}
+		}
+	}

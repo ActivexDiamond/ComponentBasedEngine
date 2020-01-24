@@ -58,42 +58,116 @@ function love.load()
 	end	
 	
 	player = Player(12, 12)
-	zombie = Zombie(16, 12)
-	zombie1 = Zombie(17, 12)
-	zombie2 = Zombie(18, 12)
+--	zombie = Zombie(16, 12)
+--	zombie1 = Zombie(17, 12)
+--	zombie2 = Zombie(18, 12)
 	
-	print ((15 / 30) % 1)
-	print (4.3 % 2)
-	print (1.3 % 2)
-	x = 0
-	function f0() 
-		x = x + 1
-		print ("ping:" .. x)
+--	local interval, total = -1, 0.5
+	local interval, total = 0.5, 5
+	function getClosure0(dt, ...)
+		local tdt = 0
+		local fdt = 0
+		local x = 0
+		return function (dt)
+			x = x + 1
+			print('ping' .. x)
+			
+			if x == 1 then fdt = dt end
+			tdt = tdt + dt 
+			local round = interval == -1 and 0 or interval
+			local per = math.min(tdt / (total - round), 1)
+			local per = tdt / (total - round)
+			print('dt', dt, 'tdt', tdt, 'per', per)
+		end
 	end
+
+	local getTime = love.timer.getTime
+	function getClosure1(dt, ...)
+		local stamp = getTime()
+		local x = 0
+		return function (dt)
+			x = x + 1
+			print('ping' .. x)
+			local tdt = getTime() - stamp
+			local round = interval == -1 and 0 or interval
+			local per = math.min(tdt / (total - round), 1)
+			local per = tdt / (total - round)
+			print('dt', dt, 'tdt', tdt, 'per', per)
+		end
+	end
+		
+	function getClosure2(dt, ...)
+		local tdt = 0
+		return function (dt)
+			tdt = tdt + dt 
+			local round = interval == -1 and 0 or interval
+			local per = math.min(tdt / (total - round), 1)
+			local per = tdt / (total - round)
+			print('dt', dt, 'tdt', tdt, 'per', per)
+		end
+	end
+--	Scheduler:callEveryFor(interval, total, getClosure0())
+
+--	Scheduler:callEveryFor(interval, total, getClosure0(), nil, function()
+--		print('-----------------')
+--		Scheduler:callEveryFor(interval, total, getClosure1()) 
+--	end)
+--	
+--	p = 0
+--	function f3(dt, per)
+--		p = p + 1
+--		print('ping' .. p, 'dt', dt, 'per', per)
+--	end
+--	
+--	Scheduler:callEveryFor(interval, total, f3)
 	
-	function f1(...) f0(); print(...) end
-	
+--	DEBUG / TEST CODE
+--print ((15 / 30) % 1)
+--	print (4.3 % 2)
+--	print (1.3 % 2)
+--	x = 0
+--	function f0() 
+--		x = x + 1
+--		print ("ping:" .. x)
+--	end
+--	
+--	function f1(...) f0(); print(...) end
+--	
+--	function done(x) print("WRAPUP: ", x) end 
+--	
 --	Scheduler:callAfter(5, f0)
 --	Scheduler:callAfter(6, f1)
 --	Scheduler:callAfter(6, f1, {'x'})
-
+--
 --	Scheduler:callFor(0.5, f0)
-	
+--	
 --	Scheduler:callEveryFor(1, 10, f1)
-	Scheduler:callEveryFor(0.1, 1, f1)
-	
---	Scheduler:callEveryFor(0.1, 1, f0)
-	
+--	Scheduler:callEveryFor(0.1, 1, f1)
+--	
+--	Scheduler:callAfter(2, f0, nil, done, 42)
+--	Scheduler:callFor(0.1, f0, nil, done, 42)
+--	Scheduler:callEvery(0.5, f0, nil, done, 42)
+--	Scheduler:callEveryFor(0.1, 1, f0, nil, done, 42)
+--
 --	Scheduler:callFor(6, f1)
 --	Scheduler:callFor(6, f1, {'x'})
-
-	function rect()
-		print('rect')
-		love.graphics.setColor(1, 1, 1, 1)
-		love.graphics.rectangle('fill', 3, 3, 3, 3)
-	end
-	
-	Scheduler:callFor(30, rect)
+--
+--	
+--	area = {3, 4, 5, 6}
+--	print(1, 2, unpack(area), 7, 8)
+--	
+--	function test(...)
+--		args = {...}
+--		print(unpack(args), 3)
+--	end
+--	test(1, 2)
+--	
+--	function rect()
+--		print('rect')
+--		love.graphics.setColor(1, 1, 1, 1)
+--		love.graphics.rectangle('fill', 3, 3, 3, 3)
+--	end
+--	Scheduler:gCallEveryFor(2, 30, rect)
 end
 
 local dir = 0;
@@ -101,9 +175,9 @@ function love.update(dt)
 	Game:tick(dt)
 	
 	player:tick(dt)
-	zombie:tick(dt)
-	zombie1:tick(dt)
-	zombie2:tick(dt)
+--	zombie:tick(dt)
+--	zombie1:tick(dt)
+--	zombie2:tick(dt)
 	Scheduler:tick(dt)
 	Evsys:poll()
 end
@@ -117,10 +191,12 @@ function love.draw()
 		v:draw(g)
 	end
 	
+	Scheduler:draw(g)
+	
 	player:draw(g)
-	zombie:draw(g)
-	zombie1:draw(g)
-	zombie2:draw(g)
+--	zombie:draw(g)
+--	zombie1:draw(g)
+--	zombie2:draw(g)
 	
 	g.setColor(1, 1, 1, 1)
 	g.scale(1/Game.MS)

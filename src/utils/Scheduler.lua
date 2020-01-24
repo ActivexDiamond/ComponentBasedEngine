@@ -11,11 +11,16 @@ local function findIndex(t, obj)
 	for k, v in ipairs(t) do
 		if obj == v then return k end
 	end
+	return false
 end
 
-local function execute(dt, func, args)
+local function execute(t, dt, i, interval, timeout, func, args)
 	args = type(args) == 'table' and args or {args}
-	if dt then func(dt, unpack(args))
+	if dt then 
+		t.tdt[i] = t.tdt[i] + dt
+		local r = interval == -1 and 0 or interval
+		local per = math.min(t.tdt[i] / (timeout - r), 1)
+		func(dt, per, unpack(args))
 	else func(unpack(args)) end
 end
 
@@ -24,6 +29,7 @@ local function remove(t, i)
 	rem(t.interval, i)
 	rem(t.timeout,  i)
 	rem(t.stamp,    i)
+	rem(t.tdt,      i)
 	rem(t.flag,     i)
 	rem(t.last,     i)
 	rem(t.runs,     i)
@@ -34,7 +40,7 @@ local function remove(t, i)
 end
 
 local function yield(t, i)
-	if t.wrapup[i] then execute(t.wrapup[i], t.wargs[i]) end
+	if t.wrapup[i] then execute(nil, nil, nil, nil, nil, t.wrapup[i], t.wargs[i]) end
 	remove(t, i)
 end
 
@@ -43,13 +49,14 @@ local function process(t, dt, i, wait, interval, timeout, stamp, flag, last, run
 	
 	if time >= stamp + wait then								--If (at or post 'wait'); proceed 
 		if interval == 0 then									--	If 'interval' == 0; single execution
-			execute(time - stamp, func, args)					--		Execute once; 'fdt' = time since initial scheduling
+			local dt = time - stamp								--
+			execute(t, dt, i, interval, timeout, func, args)	--		Execute once; 'fdt' = time since initial scheduling
 			return true											--		Yield
 		elseif timeout == 0 or time <= stamp + timeout then		--	If (no timeout is set) or (within timeout); proceed
 			if interval == -1 then								--		If interval == -1; execute every tick
 				local fdt = flag == 0 and dt or time - stamp	--			'fdt' = (first run) ? tick-dt : time since initial scheduling 
 				t.flag[i] = 0									--			Set 'first run' flag
-				execute(fdt, func, args)						--			Execute
+				execute(t, fdt, i, interval, timeout, func, args)--			Execute
 			else												--		If 'interval' set (not 0 and not -1); execute every 'interval' for 'timeout'
 				local fdt, dif, reruns							--			[1]elaborated below
 				if flag == -1 then								--
@@ -66,7 +73,7 @@ local function process(t, dt, i, wait, interval, timeout, stamp, flag, last, run
 																--
 --				print('dt', dt, 'fdt', fdt, 'dif', dif, 'flag', flag, 'reruns', reruns, 'interval', interval)
 				for _i = 1, reruns do							--
-					execute(_i == 1 and fdt or 0, func, args)	--
+					execute(t, _i == 1 and fdt or 0, i, interval, timeout, func, args)
 					t.runs[i] = t.runs[i] + 1					--
 --					if i == reruns then flag = time end			--
 					if _i == reruns then						-- 
@@ -79,8 +86,8 @@ local function process(t, dt, i, wait, interval, timeout, stamp, flag, last, run
 			end													--
 		else													-- 
 			if last ~= -1 then									--
-				for i = 1, (timeout / interval) - runs do		-- 
-					execute(0, func, args)						--
+				for _ = 1, (timeout / interval) - runs do		-- 
+					execute(t, 0, i, interval, timeout, func, args)
 				end												--
 			end													--
 			return true 										--
@@ -159,15 +166,17 @@ flag = 39.0
 ------------------------------ Constructor ------------------------------
 local Scheduler = class("Scheduler")
 function Scheduler:init()
-	self.tasks = {wait = {}, interval = {}, timeout = {}, stamp = {}, 
-		flag = {}, last = {}, runs = {}, func = {}, args = {}, wrapup = {}, wargs = {}}
+	self.tasks = {wait = {}, interval = {}, timeout = {}, stamp = {}, tdt = {},
+			flag = {}, last = {}, runs = {}, func = {}, args = {}, wrapup = {}, wargs = {}}
+		
+	self.gtasks = {wait = {}, interval = {}, timeout = {}, stamp = {}, tdt = {},
+			flag = {}, last = {}, runs = {}, func = {}, args = {}, wrapup = {}, wargs = {}}		
 end
 
 ------------------------------ Main Methods ------------------------------
-function Scheduler:tick(dt)
---	local time = getTime()
+--TODO: pass graphical tasks a 'g' param in place of 'dt'.
+local function processAll(t, dt)
 	local yielded = {}
-	local t = self.tasks
 	for i = 1, #t.func do	--All subtables of self.tasks should always be of equal length.
 		local done = process(t, dt, i, t.wait[i], t.interval[i], t.timeout[i], t.stamp[i], 
 				t.flag[i], t.last[i], t.runs[i], t.func[i], t.args[i])
@@ -175,16 +184,29 @@ function Scheduler:tick(dt)
 	end
 		
 	for i = 1, #yielded do	--Remove yielded entries in reverse order (so indices remain consistent during yielding)
-		remove(t, yielded[#yielded + 1 - i])
+		yield(t, yielded[#yielded + 1 - i])
 	end
 end
 
-function Scheduler:schedule(wait, interval, timeout, stamp, func, args, wrapup, wargs)
-	local t = self.tasks
+function Scheduler:tick(dt)
+	processAll(self.tasks, dt)
+end
+
+local gPrevTime = 0, getTime()
+function Scheduler:draw(g)
+	local dt = getTime() - gPrevTime
+	processAll(self.gtasks, dt)
+	gPrevTime = getTime()
+end
+
+------------------------------ Schedule Method ------------------------------
+function Scheduler:schedule(wait, interval, timeout, stamp, func, args, wrapup, wargs, graphical)
+	local t = graphical and self.gtasks or self.tasks
 	ins(t.wait,     wait     or 0)
 	ins(t.interval, interval or 0)
 	ins(t.timeout,  timeout  or 0)
 	ins(t.stamp,    stamp    or getTime())
+	ins(t.tdt,       0)
 	ins(t.flag,     -1)
 	ins(t.last,     -1)
 	ins(t.runs,      0)
@@ -194,7 +216,7 @@ function Scheduler:schedule(wait, interval, timeout, stamp, func, args, wrapup, 
 	ins(t.wargs,    wargs    or {})
 end
 
------------------------------- Schedule Methods ------------------------------
+------------------------------ Schedule Shortcuts ------------------------------
 function Scheduler:callAfter(wait, func, args, wrapup, wargs)
 	self:schedule(wait, nil, nil, nil, func, args, wrapup, wargs)
 end
@@ -211,26 +233,56 @@ function Scheduler:callEveryFor(interval, timeout, func, args, wrapup, wargs)
 	self:schedule(nil, interval, timeout, nil, func, args, wrapup, wargs)
 end
 
+------------------------------ Schedule Graphical Shortcuts ------------------------------
+function Scheduler:gCallAfter(wait, func, args, wrapup, wargs)
+	self:schedule(wait, nil, nil, nil, func, args, wrapup, wargs, true)
+end
+
+function Scheduler:gCallFor(timeout, func, args, wrapup, wargs)
+	self:schedule(nil, -1, timeout, nil, func, args, wrapup, wargs, true)
+end
+
+function Scheduler:gCallEvery(interval, func, args, wrapup, wargs)
+	self:schedule(nil, interval, nil, nil, func, args, wrapup, wargs, true)
+end
+
+function Scheduler:gCallEveryFor(interval, timeout, func, args, wrapup, wargs)
+	self:schedule(nil, interval, timeout, nil, func, args, wrapup, wargs, true)
+end
 ------------------------------ Cancel Methods ------------------------------
 function Scheduler:cancel(func)
 	local i = type(func) == 'number' and func or findIndex(self.tasks.func, func)
-	remove(self.tasks, i)
+	if i then remove(self.tasks, i) end
+	--Graphical tasks:
+	i = type(func) == 'number' and func or findIndex(self.gtasks.func, func)
+	if i then remove(self.gtasks, i) end
 end
 
 function Scheduler:cancelAll()
 	for i = 1, self.tasks.func do
 		remove(self.tasks, i)
 	end
+	--Graphical tasks:
+	for i = 1, self.gtasks.func do
+		remove(self.gtasks, i)
+	end
 end
 ------------------------------ Yield Methods ------------------------------
 function Scheduler:yield(func)
 	local i = type(func) == 'number' and func or findIndex(self.tasks.func, func)
-	yield(self.tasks, i)
+	if i then yield(self.tasks, i) end
+	--Graphical tasks:
+	i = type(func) == 'number' and func or findIndex(self.gtasks.func, func)
+	if i then yield(self.gtasks, i) end
 end
 
 function Scheduler:yieldAll()
 	for i = 1, self.tasks.func do
 		yield(self.tasks, i)
+	end
+	--Graphical tasks:
+	for i = 1, self.gtasks.func do
+		yield(self.gtasks, i)
 	end
 end
 

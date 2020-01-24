@@ -1,6 +1,9 @@
 local class = require "libs.cruxclass"
 local Mob = require "template.Mob"
 local IHealth = require "behavior.IHealth"
+local IMeleeAttack = require "behavior.IMeleeAttack"
+
+local MeleeWeapon = require "template.MeleeWeapon"
 
 local IEventHandler = require "evsys.IEventHandler"
 local KeypressEvent = require "evsys.input.KeypressEvent"
@@ -11,9 +14,10 @@ local Keybinds  = require "core.Keybinds"
 
 
 ------------------------------ Constructor ------------------------------ 
-local Player = class("Player", Mob):include(IHealth, IEventHandler)
+local Player = class("Player", Mob):include(IHealth, IEventHandler, IMeleeAttack)
 function Player:init(x, y)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
 	Mob.init(self, "player", x, y)
+	self.weapon = MeleeWeapon("swordStone")
 end
 
 
@@ -40,6 +44,7 @@ Player:attach(KeypressEvent, function(self, e)
 	
 	if e.k == 'g' then self.totalJumps = self.totalJumps + 1 end
 	if e.k == 'f' then self.extraJumps = self.extraJumps + 1 end
+	if e.k == 'x' then self:attack(self.weapon) end
 end)
 
 return Player

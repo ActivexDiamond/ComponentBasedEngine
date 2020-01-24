@@ -8,15 +8,11 @@ local MeleeWeapon = class("MeleeWeapon", Thing)
 function MeleeWeapon:init(id)
 	Thing.init(self, id)
 	Registry:applyStat(id, self, "meleeWeapon")
+	
+--	print('weapon', #self.hitbox)
 end
 
 ------------------------------ Constants ------------------------------
-MeleeWeapon.anchors.ORIGIN = 0
-MeleeWeapon.anchors.CENTER = 1
-MeleeWeapon.anchors.NATURAL = 2
-
-MeleeWeapon.transitions.INSTANT = 10
-MeleeWeapon.transitions.LINEAR_GROW = 11
 
 return MeleeWeapon
 

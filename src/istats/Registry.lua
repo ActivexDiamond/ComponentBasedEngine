@@ -2,7 +2,7 @@ local class = require "libs.cruxclass"
 
 local FilepathUtils = require "utils.FilepathUtils"
 local EShapes = require "behavior.EShapes"
-local MeleeWeapon = require "template.MeleeWeapon"
+local WeaponDef = require "template.WeaponDef"
 
 local Game = require "core.Game"
 
@@ -40,10 +40,10 @@ end
 
 ---Data
 _G.data = data
-_G.Weapon = MeleeWeapon
+_G.WeaponDef = WeaponDef
 loadAllData()
 _G.data = nil
-_G.Weapon = nil
+_G.WeaponDef = nil
 
 --- Mutable Defaults
 Registry.DEFAULT_STATS = {}
@@ -70,22 +70,23 @@ Registry.DEFAULT_STATS.meleeWeapon = {
 	reHit = 0,
 	hitbox = {
 		start = {0, 0, 0, 0.8},
-		startAnchor = MeleeWeapon.anchors.NATURAL,
+		startAnchor = WeaponDef.anchors.NATURAL,
 		{
-			anchor = MeleeWeapon.anchors.NATURAL,
-			transition = MeleeWeapon.transitions.LINEAR_GROW,
-			dur = 5,
+			anchor = WeaponDef.anchors.NATURAL,
+			transition = WeaponDef.transitions.LINEAR_GROW,
+			dur = 3,
 			area = {0, 0, 1.5, 0.8},
 		}, {
-			anchor = MeleeWeapon.anchors.NATURAL,
-			transition = MeleeWeapon.transitions.LINEAR_GROW,	
+			anchor = WeaponDef.anchors.NATURAL,
+			transition = WeaponDef.transitions.LINEAR_GROW,
+--			transition = WeaponDef.transitions.INSTANT,	
 			dur = 1,
 			area = {0, 0, 2.5, 0.8},
 		}, {
-			anchor = MeleeWeapon.anchors.NATURAL,
-			transition = MeleeWeapon.transitions.LINEAR_GROW,
-			dur = 6,
-			freq = 0.5,							--freq defaults to -1 (every tick)
+			anchor = WeaponDef.anchors.NATURAL,
+			transition = WeaponDef.transitions.LINEAR_GROW,
+			dur = 2,
+--			freq = 0.5,							--freq defaults to -1 (every tick)
 			area = {0, 0, 0, 0.8},
 		},
 	},

@@ -1,6 +1,6 @@
 --require "box2dMeterTest"
 ---[[
-local Game = require "core.Game"
+
 local Block = require "template.Block"
 local Entity = require "template.Entity"
 local Player = require "template.Player"
@@ -8,6 +8,9 @@ local Zombie = require "template.Zombie"
 
 local Evsys = require "evsys.Evsys"
 local KeypressEvent = require "evsys.input.KeypressEvent"
+
+local Scheduler = require "utils.Scheduler"
+local Game = require "core.Game"
 
 local blocks = {}
 local player
@@ -59,26 +62,38 @@ function love.load()
 	zombie1 = Zombie(17, 12)
 	zombie2 = Zombie(18, 12)
 	
-	print(4.3 / 2)
-	print(4.3 % 2)
-	print()
+	print ((15 / 30) % 1)
+	print (4.3 % 2)
+	print (1.3 % 2)
+	x = 0
+	function f0() 
+		x = x + 1
+		print ("ping:" .. x)
+	end
 	
-	print(math.modf(4.3 / 2))
-	print(math.modf(4.3), math.modf(2))
-	print()
+	function f1(...) f0(); print(...) end
 	
-	print(math.fmod(4.3, 2))
-	print()
+--	Scheduler:callAfter(5, f0)
+--	Scheduler:callAfter(6, f1)
+--	Scheduler:callAfter(6, f1, {'x'})
+
+--	Scheduler:callFor(0.5, f0)
 	
-	print(math.floor(4.3))
-	print(math.floor(2))
-	print(math.floor(4.3 / 2))
-	print()
+--	Scheduler:callEveryFor(1, 10, f1)
+	Scheduler:callEveryFor(0.1, 1, f1)
 	
-	print(math.ceil(4.3))
-	print(math.ceil(2))
-	print(math.ceil(4.3 / 2))
-	print()
+--	Scheduler:callEveryFor(0.1, 1, f0)
+	
+--	Scheduler:callFor(6, f1)
+--	Scheduler:callFor(6, f1, {'x'})
+
+	function rect()
+		print('rect')
+		love.graphics.setColor(1, 1, 1, 1)
+		love.graphics.rectangle('fill', 3, 3, 3, 3)
+	end
+	
+	Scheduler:callFor(30, rect)
 end
 
 local dir = 0;
@@ -89,6 +104,7 @@ function love.update(dt)
 	zombie:tick(dt)
 	zombie1:tick(dt)
 	zombie2:tick(dt)
+	Scheduler:tick(dt)
 	Evsys:poll()
 end
 

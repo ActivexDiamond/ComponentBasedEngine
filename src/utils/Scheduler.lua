@@ -5,30 +5,40 @@ local getTime = love.timer.getTime
 local ins = table.insert
 local rem = table.remove
 local modf = math.modf
+local floor = math.floor
 
-local function execute(dt, func, args)
-	func(dt, type(args) ~= 'table' and args or unpack(args))
+local function findIndex(t, obj)
+	for k, v in ipairs(t) do
+		if obj == v then return k end
+	end
 end
 
-local function executeWrapup(func, args)
-	func(type(args) ~= 'table' and args or unpack(args))
+local function execute(dt, func, args)
+	args = type(args) == 'table' and args or {args}
+	if dt then func(dt, unpack(args))
+	else func(unpack(args)) end
 end
 
 local function remove(t, i)
-	executeWrapup(t.wrapup[i], t.wargs[i])
 	rem(t.wait,     i)
 	rem(t.interval, i)
 	rem(t.timeout,  i)
 	rem(t.stamp,    i)
 	rem(t.flag,     i)
 	rem(t.last,     i)
+	rem(t.runs,     i)
 	rem(t.func,     i)
 	rem(t.args,     i)
 	rem(t.wrapup,   i)
 	rem(t.wargs,    i)
 end
 
-local function process(t, dt, i, wait, interval, timeout, stamp, flag, last, func, args)
+local function yield(t, i)
+	if t.wrapup[i] then execute(t.wrapup[i], t.wargs[i]) end
+	remove(t, i)
+end
+
+local function process(t, dt, i, wait, interval, timeout, stamp, flag, last, runs, func, args)
 	local time = getTime()
 	
 	if time >= stamp + wait then								--If (at or post 'wait'); proceed 
@@ -50,18 +60,31 @@ local function process(t, dt, i, wait, interval, timeout, stamp, flag, last, fun
 					dif = time - flag							--
 				end												--
 																--
-				reruns, dif = modf(dif / interval)				--
+				reruns = floor(dif / interval)					--
+				dif = dif % interval							--
 				if flag == -1 then reruns = reruns + 1 end		--
 																--
-				for i = 1, reruns do							--
-					execute(i == 1 and fdt or 0, func, args)	--
-					if i + 1 == reruns then flag = time end		--
+--				print('dt', dt, 'fdt', fdt, 'dif', dif, 'flag', flag, 'reruns', reruns, 'interval', interval)
+				for _i = 1, reruns do							--
+					execute(_i == 1 and fdt or 0, func, args)	--
+					t.runs[i] = t.runs[i] + 1					--
+--					if i == reruns then flag = time end			--
+					if _i == reruns then						-- 
+						dif = 0 								--
+						t.last[i] = time						--
+						t.flag[i] = time - dif					--						
+					end											--
 				end												--
-																--
-				t.last[i] = flag								--
-				t.flag[i] = flag - dif							--
+--				print('dt', dt, 'fdt', fdt, 'dif', dif, 'flag', flag, 'reruns', reruns, 'interval', interval)
 			end													--
-		else return true end									--	If timed out; yield
+		else													-- 
+			if last ~= -1 then									--
+				for i = 1, (timeout / interval) - runs do		-- 
+					execute(0, func, args)						--
+				end												--
+			end													--
+			return true 										--
+		end														--	If timed out; yield
 	end
 end
 
@@ -87,7 +110,9 @@ else
 	fdt = time - last
 	dif = time - flag
 	
-reruns, dif = math.modf(dif / interval)
+reruns = floor(dif / interval)
+dif = dif % interval
+
 if flag == -1 then reruns++ end
 
 for i = 1, reruns do
@@ -97,7 +122,7 @@ end
 last = flag
 flag = flag - dif
 
-[2] examples
+[2] examples !!! outdated !!!
 stamp = 30
 wait = 5
 interval = 1
@@ -135,7 +160,7 @@ flag = 39.0
 local Scheduler = class("Scheduler")
 function Scheduler:init()
 	self.tasks = {wait = {}, interval = {}, timeout = {}, stamp = {}, 
-		flag = {}, last = {}, func = {}, args = {}, wrapup = {}, wargs = {}}
+		flag = {}, last = {}, runs = {}, func = {}, args = {}, wrapup = {}, wargs = {}}
 end
 
 ------------------------------ Main Methods ------------------------------
@@ -145,7 +170,7 @@ function Scheduler:tick(dt)
 	local t = self.tasks
 	for i = 1, #t.func do	--All subtables of self.tasks should always be of equal length.
 		local done = process(t, dt, i, t.wait[i], t.interval[i], t.timeout[i], t.stamp[i], 
-				t.flag[i], t.last[i], t.func[i], t.args[i])
+				t.flag[i], t.last[i], t.runs[i], t.func[i], t.args[i])
 		if done then ins(yielded, i) end
 	end
 		
@@ -162,6 +187,7 @@ function Scheduler:schedule(wait, interval, timeout, stamp, func, args, wrapup, 
 	ins(t.stamp,    stamp    or getTime())
 	ins(t.flag,     -1)
 	ins(t.last,     -1)
+	ins(t.runs,      0)
 	ins(t.func,     func)
 	ins(t.args,     args     or {})
 	ins(t.wrapup,   wrapup)
@@ -184,4 +210,28 @@ end
 function Scheduler:callEveryFor(interval, timeout, func, args, wrapup, wargs)
 	self:schedule(nil, interval, timeout, nil, func, args, wrapup, wargs)
 end
+
+------------------------------ Cancel Methods ------------------------------
+function Scheduler:cancel(func)
+	local i = type(func) == 'number' and func or findIndex(self.tasks.func, func)
+	remove(self.tasks, i)
+end
+
+function Scheduler:cancelAll()
+	for i = 1, self.tasks.func do
+		remove(self.tasks, i)
+	end
+end
+------------------------------ Yield Methods ------------------------------
+function Scheduler:yield(func)
+	local i = type(func) == 'number' and func or findIndex(self.tasks.func, func)
+	yield(self.tasks, i)
+end
+
+function Scheduler:yieldAll()
+	for i = 1, self.tasks.func do
+		yield(self.tasks, i)
+	end
+end
+
 return Scheduler()

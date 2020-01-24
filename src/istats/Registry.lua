@@ -2,7 +2,7 @@ local class = require "libs.cruxclass"
 
 local FilepathUtils = require "utils.FilepathUtils"
 local EShapes = require "behavior.EShapes"
-local WeaponDef = require "template.WeaponDef"
+local MeleeWeapon = require "template.MeleeWeapon"
 
 local Game = require "core.Game"
 
@@ -40,10 +40,10 @@ end
 
 ---Data
 _G.data = data
-_G.WeaponDef = WeaponDef
+_G.Weapon = MeleeWeapon
 loadAllData()
 _G.data = nil
-_G.WeaponDef = nil
+_G.Weapon = nil
 
 --- Mutable Defaults
 Registry.DEFAULT_STATS = {}
@@ -69,11 +69,24 @@ Registry.DEFAULT_STATS.meleeWeapon = {
 	effects = {},
 	reHit = 0,
 	hitbox = {
+		start = {0, 0, 0, 0.8},
+		startAnchor = MeleeWeapon.anchors.NATURAL,
 		{
-			anchor = WeaponDef.CENTER_ALIGNED,
---			transition = WeaponDef.INSTANT,	--- skipped for last phase
-			dur = 10,
-			area = {0, 0, 0.1, 1},
+			anchor = MeleeWeapon.anchors.NATURAL,
+			transition = MeleeWeapon.transitions.LINEAR_GROW,
+			dur = 5,
+			area = {0, 0, 1.5, 0.8},
+		}, {
+			anchor = MeleeWeapon.anchors.NATURAL,
+			transition = MeleeWeapon.transitions.LINEAR_GROW,	
+			dur = 1,
+			area = {0, 0, 2.5, 0.8},
+		}, {
+			anchor = MeleeWeapon.anchors.NATURAL,
+			transition = MeleeWeapon.transitions.LINEAR_GROW,
+			dur = 6,
+			freq = 0.5,							--freq defaults to -1 (every tick)
+			area = {0, 0, 0, 0.8},
 		},
 	},
 }

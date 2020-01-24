@@ -83,8 +83,8 @@ data{"spearStone",
 			damage = 5,
 			hitbox = {
 				{
-					anchor = WeaponDef.CENTER_ALIGNED,
---					transition = WeaponDef.INSTANT,	--- skipped for last phase
+					anchor = Weapon.CENTER_ALIGNED,
+--					transition = Weapon.INSTANT,	--- skipped for last phase
 					dur = 15,
 					area = {0, 0, 0.1, 2},
 				},

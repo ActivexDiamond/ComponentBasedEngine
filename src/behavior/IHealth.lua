@@ -12,15 +12,15 @@ function IHealth:hurt(n)
 	assert(n >= 0, "Cannot deal negative damage.")
 	if self.health == 0 then return end
 	self.health = math.max(self.health - n, 0)
-	if self.health == 0 then self:onDeath() end
+	if self.health == 0 then self:_onDeath() end
 end
 
 ---Restore/Kill
 function IHealth:restore() self.health = self.maxHealth end
-function IHealth:kill() self.health = 0; self:onDeath() end
+function IHealth:kill() self.health = 0; self:_onDeath() end
 
 ---Callback
-function IHealth:onDeath() end
+function IHealth:_onDeath() end
 
 ---Setup
 

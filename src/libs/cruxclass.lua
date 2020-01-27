@@ -19,7 +19,7 @@ local middleclass = {
   
   _LICENSE = [[
     MIT LICENSE
-    Copyright (c) 2011 Enrique García Cota
+    Copyright (c) 2011 Enrique GarcÃ­a Cota
     Permission is hereby granted, free of charge, to any person obtaining a
     copy of this software and associated documentation files (the
     "Software"), to deal in the Software without restriction, including
@@ -153,7 +153,8 @@ local function _createClass(__name__, super)
 
   local aClass = { __name__ = __name__, super = super, static = {},
                    __instanceDict__ = dict, __declaredMethods__ = {},
-                   __subclasses__ = setmetatable({}, {__mode='k'})  }
+                   __subclasses__ = setmetatable({}, {__mode='k'}),
+                   __mixins__ = {}  }
 
   if super then
     setmetatable(aClass.static, {

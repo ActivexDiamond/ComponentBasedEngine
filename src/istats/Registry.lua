@@ -4,14 +4,15 @@ local FilepathUtils = require "utils.FilepathUtils"
 local EShapes = require "behavior.EShapes"
 local WeaponDef = require "template.WeaponDef"
 
-local Game = require "core.Game"
+--local Game = require "core.Game"
 
+------------------------------ Constructor ------------------------------
 local Registry = class("Registry")
 function Registry:init()
 	error "Attempting to initialize static class."
 end
 
----Data Functions
+------------------------------ Data Methods ------------------------------
 local function data(d)
 	local t = Registry.static
 	local id = d[1]
@@ -38,65 +39,33 @@ local function loadAllData()
 	print("Finished loading all data.")
 end
 
----Data
+------------------------------ Data ------------------------------
 _G.data = data
 _G.WeaponDef = WeaponDef
 loadAllData()
 _G.data = nil
 _G.WeaponDef = nil
 
---- Mutable Defaults
-Registry.DEFAULT_STATS = {}
+------------------------------ Defaults ------------------------------
+local D_IDV, D_INSTV
+do
+	D_IDV = require "istats.defaults.idVars"
+	D_INSTV = require "istats.defaults.instanceVars"
+	local t = require "istats.defaults.masks"
+	D_IDV.categories, D_IDV.masks = t.categories, t.masks
+end
 
-Registry.DEFAULT_STATS.movement = {
-	speed = 3,
-	acc = 0.25,
-	deacceleration = 0.9,
-}
-Registry.DEFAULT_STATS.jumping = {
-	totalJumps = 1,
-	jumpHeight = 1.5,
-	jumpVelocityMult = 2,
-}
 
---TODO: Upgrade melee-weapon phases to allow altering of all stats not just hitbox.
-Registry.DEFAULT_STATS.meleeWeapon = {
-	maxDurability = 100,
-	cooldown = 5,
 
-	--TODO: Move hit-related stats to sub-table.
-	damage = 10,
-	effects = {},
-	reHit = 0,
-	hitbox = {
-		start = {0, 0, 0, 0.8},
-		startAnchor = WeaponDef.anchors.NATURAL,
-		{
-			anchor = WeaponDef.anchors.NATURAL,
-			transition = WeaponDef.transitions.LINEAR_GROW,
-			dur = 3,
-			area = {0, 0, 1.5, 0.8},
-		}, {
-			anchor = WeaponDef.anchors.NATURAL,
-			transition = WeaponDef.transitions.LINEAR_GROW,
---			transition = WeaponDef.transitions.INSTANT,	
-			dur = 1,
-			area = {0, 0, 2.5, 0.8},
-		}, {
-			anchor = WeaponDef.anchors.NATURAL,
-			transition = WeaponDef.transitions.LINEAR_GROW,
-			dur = 2,
---			freq = 0.5,							--freq defaults to -1 (every tick)
-			area = {0, 0, 0, 0.8},
-		},
-	},
-}
+Registry.defaults = {}
+Registry.defaults.idVars = D_IDV
+Registry.defaults.instVars = D_INSTV
 
---- Mutables
+------------------------------ InstanceVars Applier ------------------------------
 function Registry.static:applyStat(id, inst, stat)
 	local applied = false
-	if self.DEFAULT_STATS[stat] then	--Apply defaults
-		for k, v in pairs(self.DEFAULT_STATS[stat]) do inst[k] = v end
+	if D_INSTV[stat] then	--Apply defaults
+		for k, v in pairs(D_INSTV[stat]) do inst[k] = v end
 		applied = true
 	end
 			
@@ -107,76 +76,52 @@ function Registry.static:applyStat(id, inst, stat)
 	return applied
 end
 
-
----		Defaults
----Common Stats
-Registry.DEFAULT_NAME = "Unnamed"
-Registry.DEFAULT_DESC = "Missing desc."
-
----Rendering
-Registry.DEFAULT_SPR = nil
-
----Physics
-Registry.DEFAULT_BODY_DENSITY = nil
-Registry.DEFAULT_BODY_MASS = nil	--As to use Box2D's internal mass computation.
-Registry.DEFAULT_BODY_FRICTION = nil
-Registry.DEFAULT_BODY_RESTITUTION = nil
-Registry.DEFAULT_SHAPE_TYPE = EShapes.RECT
-Registry.DEFAULT_SHAPE_A = 1
-Registry.DEFAULT_SHAPE_B = 1
-
----Health
-Registry.DEFAULT_MAX_HEALTH = 100
-
---Registery.DEFAULT_
-
----		Public Getters
----Common Stats
+------------------------------ Thing ------------------------------
 function Registry.static:getName(id)
 	return self[id] and self[id].name or "$" .. id
 end
 
 function Registry.static:getDesc(id)
-	return self[id] and self[id].desc or self.DEFAULT_DESC
+	return self[id] and self[id].desc or self.defaults.DESC
 end
 
----Rendering
+------------------------------ Rendering ------------------------------
 function Registry.static:getSpr(id)
 	
 end
 
----Physics
+------------------------------ IBoundingBox ------------------------------
 function Registry.static:getBodyDensity(id)
-	return self[id] and self[id].body and self[id].body.density or self.DEFAULT_BODY_DENSITY
+	return self[id] and self[id].body and self[id].body.density or D_IDV.BODY_DENSITY
 end
 
 function Registry.static:getBodyMass(id)
-	return self[id] and self[id].body and self[id].body.mass or self.DEFAULT_BODY_MASS
+	return self[id] and self[id].body and self[id].body.mass or D_IDV.BODY_MASS
 end
 
 function Registry.static:getBodyFriction(id)
-	return self[id] and self[id].body and self[id].body.friction or self.DEFAULT_BODY_FRICTION
+	return self[id] and self[id].body and self[id].body.friction or D_IDV.BODY_FRICTION
 end
 
 function Registry.static:getBodyRestitution(id)
-	return self[id] and self[id].body and self[id].body.rest or self.DEFAULT_BODY_RESTITUTION
+	return self[id] and self[id].body and self[id].body.rest or D_IDV.BODY_RESTITUTION
 end
 
 function Registry.static:getShapeType(id)
 	return (self[id] and self[id].body and 
-		EShapes[self[id].body.shape or ""]) or self.DEFAULT_SHAPE_TYPE
+		EShapes[self[id].body.shape or ""]) or D_IDV.SHAPE_TYPE
 end
 
 function Registry.static:getShapeDat(id)
 	if self[id] and self[id].body then
 		local b = self[id].body
-		return b.w or b.r or self.DEFAULT_SHAPE_A, b.h or self.DEFAULT_SHAPE_B
-	else return self.DEFAULT_SHAPE_A, self.DEFAULT_SHAPE_B end
+		return b.w or b.r or D_IDV.SHAPE_A, b.h or D_IDV.SHAPE_B
+	else return D_IDV.SHAPE_A, D_IDV.SHAPE_B end
 end
 
----Health
+------------------------------ IHealth ------------------------------
 function Registry.static:getMaxHealth(id)
-	return self[id] and self[id].maxHealth or self.DEFAULT_MAX_HEALTH
+	return self[id] and self[id].maxHealth or D_IDV.MAX_HEALTH
 end
 
 return Registry

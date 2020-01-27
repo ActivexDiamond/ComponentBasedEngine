@@ -1,6 +1,7 @@
 local class = require "libs.cruxclass"
 local Mob = require "template.Mob"
 local IHealth = require "behavior.IHealth"
+local IHittable = require "behavior.IHittable"
 local IBoundingBox = require "behavior.IBoundingBox"
 
 local MathUtils = require "libs.MathUtils"
@@ -28,13 +29,13 @@ local function repath(self, f)
 end
 
 ------------------------------ Constructor ------------------------------ 
-local Zombie = class("Zombie", Mob):include(IHealth)
+local Zombie = class("Zombie", Mob):include(IHealth, IHittable)
 function Zombie:init(x, y)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
 	Mob.init(self, "zombie", x, y)
 	self:addCategory(IBoundingBox.categories.HOSTILE_MOB)
 	self:addMask(IBoundingBox.categories.PLAYER)
 	self.path = Mob.LEFT
-	print(self.fixture:getFilterData())
+--	print(self.fixture:getFilterData())
 end
 
 ------------------------------ Main Methods ------------------------------
@@ -47,7 +48,7 @@ function Zombie:tick(dt)
 	Game.world:queryBoundingBox(0, 0, wx, wy, function(f) return repath(self, f) end)
 	self:_walk(self.path, false, dt)
 	
-	self:hurt(0.2)
+--	self:hurt(0.2)
 --	print(self:getHealth())
 end
 

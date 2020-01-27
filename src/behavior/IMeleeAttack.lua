@@ -1,12 +1,13 @@
 local Mixins = require "libs.Mixins"
 local IBoundingBox = require "behavior.IBoundingBox"
+local IHittable = require "behavior.IHittable"
 local WeaponDef = require "template.WeaponDef"
 
 local Scheduler = require "utils.Scheduler"
 local Game = require "core.Game"
 
 ------------------------------ Upvalues ------------------------------
-local onCollision;
+local onCollision, onHit, onAttackDone
 
 ------------------------------ Helper Methods ------------------------------
 local function lerp(t, a, b)
@@ -23,9 +24,15 @@ local function lerpArea(t, a, b)
 end
 
 --TODO: refactor into the abstraction layer for Box2D.
-local function box2dWrapper(func, ...)
-	local args = {...}
-	return function(fixt) func(fixt, unpack(args)) end
+local function box2dWrapper(a, b, ...)
+	local args, func, self = {...}
+	if type(a) == 'table' then 
+		self, func = a, b 
+		return function(fixt) func(self, fixt, unpack(args)) end
+	elseif type(a) == 'function' then
+		func = a; table.insert(args, 1, b) 
+		return function(fixt) func(fixt, unpack(args)) end
+	else error "box2DWrapper must be called with (self, f, args) or (f, args)." end
 end
 
 ------------------------------ Setup ------------------------------
@@ -57,9 +64,10 @@ end
 
 ------------------------------ Transition Runners ------------------------------
 local function checkCollision(self, bb, wpn)
-	Game.world:queryBoundingBox(bb[1], bb[2], bb[3], bb[4], 
-			box2dWrapper(onCollision, self, wpn))
-			
+	local x1, y1, x2, y2 = bb[1], bb[2], bb[1] + bb[3], bb[2] + bb[4]
+	Game.world:queryBoundingBox(x1, y1, x2, y2, 
+			box2dWrapper(self, onCollision, wpn))
+						
 	if DEBUG.BOUNDING_BOXES then
 		local g = love.graphics
 		g.setColor(1, 1, 1, 1)
@@ -85,16 +93,18 @@ end
 
 ------------------------------ Main Methods ------------------------------
 ---Called when a hittable mob is hit.
-local function onHit()
-
+function onHit(self, obj, wpn)
+	obj:getHit(self)
 end
 
 ---Passed to Box2D as callback; filters collision to hittable mobs only.
-local function onCollision(self, fixt,  wpn)
-	
+function onCollision(slf, fixt,  wpn)
+	local obj = fixt:getUserData()
+	if obj:instanceof(IHittable) then onHit(slf, obj, wpn) end
+	return true
 end
 	
-local function onAttackDone(self, wpn)
+function onAttackDone(slf, wpn)
 	print('done')
 end
 ---Fetches the vars for the phase, schedules it, and chains the next phase.

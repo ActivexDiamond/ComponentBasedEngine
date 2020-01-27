@@ -1,0 +1,3 @@
+DEBUG = {}
+
+DEBUG.BOUNDING_BOXES = true

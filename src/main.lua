@@ -1,5 +1,6 @@
 --require "box2dMeterTest"
 ---[[
+require "DEBUG"
 
 local Block = require "template.Block"
 local Entity = require "template.Entity"
@@ -17,9 +18,6 @@ local player
 local zombie, zombie1, zombie2
 
 function love.load()
-
-	DEBUG = {}
---	DEBUG.BOUNDING_BOXES = true
 
 	local grid = {0, 0,
 		2, 2,
@@ -63,8 +61,8 @@ function love.load()
 	
 	player = Player(12, 12)
 	zombie = Zombie(16, 12)
-	zombie1 = Zombie(17, 12)
-	zombie2 = Zombie(18, 12)
+--	zombie1 = Zombie(17, 12)
+--	zombie2 = Zombie(18, 12)
 	
 --	local interval, total = -1, 0.5
 	local interval, total = 0.5, 5
@@ -180,8 +178,8 @@ function love.update(dt)
 	
 	player:tick(dt)
 	zombie:tick(dt)
-	zombie1:tick(dt)
-	zombie2:tick(dt)
+--	zombie1:tick(dt)
+--	zombie2:tick(dt)
 	Scheduler:tick(dt)
 	Evsys:poll()
 end
@@ -199,8 +197,8 @@ function love.draw()
 	
 	player:draw(g)
 	zombie:draw(g)
-	zombie1:draw(g)
-	zombie2:draw(g)
+--	zombie1:draw(g)
+--	zombie2:draw(g)
 	
 	g.setColor(1, 1, 1, 1)
 	g.scale(1/Game.MS)

@@ -20,83 +20,39 @@ data{"mobZombie",
 }
 
 data{"player",
-	stats = {
-		movement = {
-			speed = 3,
-		},
-		jumping = {
-			totalJumps = 3,
-		},
-	},
+	speed = 3,
+	totalJumps = 3,
 
-	body = {
-		w = 0.6,
-		h = 1,
-		mass = 1,
-		friction = 0,
-	},
+	w = 0.6,
+	h = 1,
+	mass = 1,
+	friction = 0,
 }
 
 data{"zombie",
-	stats = {
-		movement = {
-			speed = 1.5,
-		},
-		jumping = {
-			totalJumps = 1,
-		},
-	},
-	body = {
-		w = 0.8,
-		h = 1.1,
-		mass = 1,
-		friction = 0,
-		shape = 'RECT'
-	},
+	speed = 1.5,
+	totalJumps = 1,
+
+	w = 0.8,
+	h = 1.1,
+	mass = 1,
+	friction = 0,
+	shape = 'RECT'
 }
 
+
+
 data{"swordStone",
-	stats = {
-		meleeWeapon = {
-			maxDurability = 50,
-			cooldown = 2,
-			damage = 5,
-		},
-	},
+	maxDurability = 50,
+	cooldown = 2,
+	damage = 5,
 }
 
 data{"swordIron",
-	stats = {
-		meleeWeapon = {		
-			maxDurability = 250,
-			cooldown = 2,
-			damage = 15,
-		},
-	},
+	maxDurability = 250,
+	cooldown = 2,
+	damage = 15,
 }
-
-data{"spearStone",
-	stats = {
-		meleeWeapon = {	
-			maxDurability = 50,
-			cooldown = 2,
-			damage = 5,
-			hitbox = {
-				{
-					anchor = WeaponDef.NATURAL,
---					transition = WeaponDef.INSTANT,	--- skipped for last phase
-					dur = 15,
-					area = {0, 0, 0.1, 2},
-				},
-			},
-		},
-	},
-}
-
-
-
-
-
 
 data{"spearStone",
 	maxDurability = 50,
@@ -104,19 +60,12 @@ data{"spearStone",
 	damage = 5,
 	hitbox = {
 		{
-			anchor = WeaponDef.NATURAL,
+		anchor = WeaponDef.NATURAL,
 --					transition = WeaponDef.INSTANT,	--- skipped for last phase
 			dur = 15,
 			area = {0, 0, 0.1, 2},
 		},
 	},
-	
-	speed = 2,
-	acceleration = 1,
-	deacceleration = 0.9,
-	
-	width = 32,
-	height = 32 
 }
 
 

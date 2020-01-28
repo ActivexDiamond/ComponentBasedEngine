@@ -1,4 +1,4 @@
---local Mixins = require "libs.Mixins"
+local Mixins = require "libs.Mixins"
 local EShapes = require "behavior.EShapes"
 
 ------------------------------ Private Methods ------------------------------
@@ -27,7 +27,7 @@ local function checkShapeDat(st, d)
 end
 
 ------------------------------ Constructor ------------------------------
-local IBoundingBox = {}
+local IBoundingBox = Mixins("IBoundingBox")
 --- @function [parent=#behavior.IBoundingBox] init Construct a new BoundingBox.
 -- @param #object self An object of the class IBoundingBox was included on.
 -- @param #love.physics#World world The world to create the body in.

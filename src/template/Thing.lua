@@ -5,7 +5,7 @@ local Registry = require "istats.Registry"
 local Thing = class("Thing")
 function Thing:init(id)
 	self.id = id
---	Registry:applyStats(id, self)
+	Registry:apply(id, self)
 end
 
 ------------------------------ Abstract Methods ------------------------------
@@ -23,7 +23,7 @@ function Thing:idEquals(o)
 end
 
 function Thing:__tostring()
-	return string:format("[%s] with ID: %s", 
+	return string.format("[%s] with ID: %s", 
 		self.class.__name__, self.id)
 end 
 

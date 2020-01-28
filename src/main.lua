@@ -2,6 +2,8 @@
 ---[[
 require "DEBUG"
 
+local Registry = require "istats.Registry"
+
 local Block = require "template.Block"
 local Entity = require "template.Entity"
 local Player = require "template.Player"

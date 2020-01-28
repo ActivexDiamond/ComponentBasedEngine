@@ -10,7 +10,7 @@ local Game = require "core.Game"
 ------------------------------ Helper Methods ------------------------------
 
 ------------------------------ Setup ------------------------------
-local IHittable = {}
+local IHittable = Mixins("IHittable")
 Mixins.onPostInit(IHittable, function(self)
 	assert(self:instanceof(IBoundingBox), "IMeleeAttack can only be applied on instances of IBoundingBox")
 	assert(self:instanceof(IHealth), "IMeleeAttack can only be applied on instances of IHealth")

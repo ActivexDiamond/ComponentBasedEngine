@@ -1,9 +1,23 @@
 local Mixins = require "libs.Mixins"
-local Registry = require "istats.Registry"
+--local Registry = require "istats.Registry"
 
-local IHealth = {}
+------------------------------ Upvalues ------------------------------
 
----Heal/Hurt
+------------------------------ Helper Methods ------------------------------
+
+------------------------------ Setup ------------------------------
+local IHealth = Mixins("IHealth")
+Mixins.onPostInit(IHealth, function(self)
+	self.maxHealth = self:getBaseMaxHealth()
+	---If health was set by the instance, just bound it. 
+	self.health = self.health and self:setHealth(self.health) or self.maxHealth
+end)
+
+function IHealth:setupHealth() 
+	self.maxHealth = self:getBaseMaxHealth()
+	self.health = self.health and self:setHealth(self.health) or self.maxHealth
+end
+------------------------------ Heal / Hurt ------------------------------
 function IHealth:heal(n)
 	assert(n >= 0, "Cannot heal negatively.")
 	self.health = math.min(self.health + n, self.maxHealth)
@@ -15,27 +29,14 @@ function IHealth:hurt(n)
 	if self.health == 0 then self:_onDeath() end
 end
 
----Restore/Kill
+------------------------------ Restore / Kill ------------------------------
 function IHealth:restore() self.health = self.maxHealth end
 function IHealth:kill() self.health = 0; self:_onDeath() end
 
----Callback
+------------------------------ Callback ------------------------------
 function IHealth:_onDeath() end
 
----Setup
-
-Mixins.onPostInit(IHealth, function(self)
-	self.maxHealth = self:getBaseMaxHealth()
-	---If health was set by the instance, just bound it. 
-	self.health = self.health and self:setHealth(self.health) or self.maxHealth
-end)
-
-function IHealth:setupHealth() 
-	self.maxHealth = self:getBaseMaxHealth()
-	self.health = self.health and self:setHealth(self.health) or self.maxHealth
-end
-
----Health Getters/Setters
+------------------------------ Health Getters/Setters ------------------------------
 function IHealth:getHealth() return self.health end
 --function IHealth:rawSetHealth(n) health = n end
 function IHealth:setHealth(n) 
@@ -43,15 +44,15 @@ function IHealth:setHealth(n)
 	if self.health <= 0 then self:onDeath() end
 end
 
----MaxHealth Getters/Setters
+------------------------------ MaxHealth Getters/Setters ------------------------------
 function IHealth:getMaxHealth() return self.maxHealth end
 --function IHealth:rawSetMaxHealth(n) maxHealth = n end
 function IHealth:setMaxHealth(n) 
 	self.maxHealth = n; self.health = math.min(self.health, self.maxHealth)
 end
 
----BaseMaxHealth Getter
-function IHealth:getBaseMaxHealth() return Registry:getMaxHealth(self.id) end
+------------------------------ BaseMaxHealth Getters/Setters ------------------------------
+function IHealth:getBaseMaxHealth() return self:getMaxHealth() end
 
 return IHealth
 

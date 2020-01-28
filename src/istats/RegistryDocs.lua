@@ -19,8 +19,7 @@ instanceVars:
 	
 Registry init:
 	Iterate over the following folders, indexing into the following:
-	defaults/idv/ 	-> Reg.defaults.idv
-	defaults/instv/ -> Reg.defaults.instv
+	defaults/ 		-> Reg.defaults
 	data/ 			-> Reg.data
 		Note: data is split into idv/instv based on the provided defaults.
 			A datum with no underlying default is ignored! 
@@ -31,7 +30,7 @@ Registry init:
 
 Registry usage:
 	1- Thing (or child) calls Registry:apply(self, id).					--initial call.
-	2- The hierarchy of self is explored to gather all classes/interfaces,
+	2- The hierarchy of inst is explored to gather all classes/interfaces,
 		def a table of their __name__ fields as h.						--fetch hierarchy.
 		  
 	3- All entries defined by the given class's defaults get 			---idv
@@ -54,9 +53,9 @@ Registry usage:
 				instance[k] = dat[id][k] or v 								--set instance[var] to data[id][var] or defaults.intsv[className][var]
 	
 	
-	
+================ OUTDATED ================ ALSO TERMINOLOGY CHANGED GREATLY ================ 
 In-place functions:
-	t.__f is used for default-fallbacks: is called with f(instance, id, t, k, v)
+	t.__f is used for default-fallbacks: is called with f(id, instance, t, k, v)
 		- If present for t.__f[k], is indented into getVar() as the default-fallback.
 		- Else, the native-default is indented directly.
 		 

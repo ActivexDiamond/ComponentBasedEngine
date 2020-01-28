@@ -5,7 +5,7 @@ local IBoundingBox = require "behavior.IBoundingBox"
 local MultiState = require "core.MultiState"
 
 --local Game = require "core.Game"
-local Registry = require "istats.Registry"
+--local Registry = require "istats.Registry"
 
 ------------------------------ Helper Methods ------------------------------
 local function sign(x)
@@ -110,8 +110,6 @@ function Mob:init(id, x, y)
 	Entity.init(self, id, x, y)
 	self:addCategory(IBoundingBox.categories.MOB)
 	
-	Registry:applyStat(id, self, "movement")
-	Registry:applyStat(id, self, "jumping")
 	self.state = MultiState()
 	self.dir = Mob.RIGHT	
 	self.jumpsRemaining = self.totalJumps

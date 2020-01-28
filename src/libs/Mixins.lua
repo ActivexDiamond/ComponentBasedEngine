@@ -65,4 +65,11 @@ function Mixins.onPostInit(mixin, ...)
 		joinInclusions(mixin.__included, included) or included
 end
 
+function Mixins:__call(str)
+--	return { static = {__mixinName__ = str} }
+	return {__name__ = str}
+end
+
+setmetatable(Mixins, Mixins)
+
 return Mixins

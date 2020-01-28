@@ -1,14 +1,12 @@
 local class = require "libs.cruxclass"
 local Thing = require "template.Thing"
 
-local Registry = require "istats.Registry"
+--local Registry = require "istats.Registry"
 
 ------------------------------ Constructor ------------------------------
 local MeleeWeapon = class("MeleeWeapon", Thing)
 function MeleeWeapon:init(id)
 	Thing.init(self, id)
-	Registry:applyStat(id, self, "meleeWeapon")
-	
 --	print('weapon', #self.hitbox)
 end
 

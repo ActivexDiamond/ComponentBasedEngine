@@ -192,11 +192,12 @@ local function _includeMixin(aClass, mixin)
   if aClass.__mixins__ then table.insert(aClass.__mixins__, mixin) end	--------------
     
   for name,method in pairs(mixin) do
-    if name ~= "__included" and name ~= "static" then aClass[name] = method end
+    if name ~= "__included" and name ~= "static" 
+    		and name ~= "__name__" then aClass[name] = method end
   end
 
   for name,method in pairs(mixin.static or {}) do
-    aClass.static[name] = method
+  	aClass.static[name] = method
   end
 
   if type(mixin.__included)=="function" then mixin:__included(aClass) end
@@ -204,6 +205,7 @@ local function _includeMixin(aClass, mixin)
 end
 
 local DefaultMixin = {
+  __name__ = "DefaultCruxclassMixin",
   __tostring   = function(self) return "instance of " .. tostring(self.class) end,
 
   init   = function(self, ...) end,

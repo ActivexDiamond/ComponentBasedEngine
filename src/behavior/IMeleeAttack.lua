@@ -36,7 +36,7 @@ local function box2dWrapper(a, b, ...)
 end
 
 ------------------------------ Setup ------------------------------
-local IMeleeAttack = {}
+local IMeleeAttack = Mixins("IMeleeAttack")
 Mixins.onPostInit(IMeleeAttack, function(self)
 	assert(self:instanceof(IBoundingBox), "IMeleeAttack can only be applied on instances of IBoundingBox")
 end)

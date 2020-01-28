@@ -2,7 +2,7 @@ local class = require "libs.cruxclass"
 
 local FilepathUtils = require "utils.FilepathUtils"
 local EShapes = require "behavior.EShapes"
-local IBoundingBox = require "behavior.IBoundingBox"
+--local IBoundingBox = require "behavior.IBoundingBox"
 local WeaponDef = require "template.WeaponDef"
 
 --local Game = require "core.Game"
@@ -26,30 +26,26 @@ end
 
 local mtFuncHolder = {			--Same as the above, but only for __f / __d.
 	__index = function(t, k)
-		assert(k == "__f" or k == "__d", "Only __f or __d are auto-created. Cannot index nil values.")
+		assert(k == "__f" or k == "__d", "Only __f or __d are auto-created. Attempted to index " .. k)
 		t[k] = {}
 		return t[k]
 	end
 }
-local mtTempHolders = {			--If the user attempts to index r.className 
+local mtDefaultsHolder = {			--If the user attempts to index r.className 
 	__index = function(t, k)			--without initializing it, initialize it implicitly.
-		t[k] = setmetatable({}, mtFuncHolder)
+		if k == "idv" or k == "instv" then return end
+		local idv = setmetatable({}, mtFuncHolder)
+		local instv = setmetatable({}, mtFuncHolder)
+		t[k] = setmetatable({idv = idv, instv = instv}, mtFuncHolder)
 		return t[k]
 	end
 }
 
-local tempDefaultsHolder
-do
-	local idv = setmetatable({}, mtTempHolders)
-	local instv = setmetatable({}, mtTempHolders)
-	tempDefaultsHolder = {idv = idv, instv = instv}
-end
+local tempDefaultsHolder = setmetatable({}, mtDefaultsHolder)
 
-
-local DslEnv = {
-	print = print,
-	assert = assert,
-	error = error,
+local dslEnv = {
+	print = print, pairs = pairs, ipairs = ipairs,
+	assert = assert, error = error,
 	
 	data = data,
 	r = tempDefaultsHolder,
@@ -71,7 +67,7 @@ local function loadDir(dir, env)
 	
 	for k, v in ipairs(files) do
 		local file = dir .. v
-		print(file)
+		print('\t' .. file)
 		local type = love.filesystem.getInfo(file).type
 		if type == 'directory' then loadDir(file .. '/', env)
 		elseif type == 'file' then loadFile(file, env) end
@@ -84,34 +80,196 @@ local function loadAll(defaultsEnv, dataEnv)
 	print("Loading data.")
 	loadDir(FilepathUtils.love.path.istatsData, dataEnv)
 	print("Done loading datapack.")
+	print()
 end
 
 ------------------------------ Data Loading ------------------------------
 do
-	Registry.static.data = {}
+	Registry.data = {}
+
+	loadAll(dslEnv, dslEnv)
+--	Registry.defaults = tempDefaultsHolder
+	Registry.defaults = dslEnv.r
 	
-	loadAll(DslEnv, DslEnv)
-	setmetatable(tempDefaultsHolder.idv, {})
-	setmetatable(tempDefaultsHolder.instv, {})
-	Registry.static.defaults = tempDefaultsHolder
-	
+--	local dat, def = Registry.data, Registry.defaults
+--	local dat, def = Registry.data, tempDefaultsHolder
+--	print(" --- r ---") 
+--	for k, v in pairs(dslEnv.r.Thing.idv or {}) do
+--		print(k, v)
+--	end
+--	print()
+--	
+--	print(" --- REG ---") 
+--	for k, v in pairs(def.Thing.idv or {}) do
+--		print(k, v)
+--	end
+--	print()	
+--	print(" --- data ---") 
+--	for k, v in pairs(dat) do
+--		print(k, v)
+--	end
+--	print()
+--	
+--	for name, t in pairs(def) do
+--	
+--		print(" --- " .. name .. ".idv ---") 
+--		for k, v in pairs(t.idv or {}) do
+--			print(k, v)
+--		end
+--		print()
+--		
+--		
+--		print(" --- " .. name .. ".instv ---") 
+--		for k, v in pairs(t.instv or {}) do
+--			print(k, v)
+--		end
+--		print()
+--	end	
 end
 
------------------------------- InstanceVars Applier ------------------------------
-function Registry.static:applyStat(id, inst, stat)
-	local applied = false
-	if D_INSTV[stat] then	--Apply defaults
-		for k, v in pairs(D_INSTV[stat]) do inst[k] = v end
-		applied = true
+------------------------------ Util Methods------------------------------
+local function getterStr(str)
+	return "get" .. (str:gsub("^%l", string.upper)) 
+end 
+
+local function appendTable(t1, t2)
+	for _, v in ipairs(t2) do
+		table.insert(t1, v)
 	end
-			
-	if self[id] and self[id].stats and self[id].stats[stat] then	--Apply idata
-		for k, v in pairs(self[id].stats[stat]) do inst[k] = v end
-		applied = true
+end
+
+------------------------------ Hierarchy Methods ------------------------------
+local function fetchDirectHierarchy(class)
+	local h = {class.__name__}
+	if DEBUG.REG_APPLY then print("class.__name__", class.__name__) end
+	for k, v in ipairs(class.__mixins__) do
+		if DEBUG.REG_APPLY then print("\tmixins.__name__", v.__name__) end
+		table.insert(h, v.__name__)
 	end
-	return applied
+	return h
+end
+
+local function fetchHierarchy(inst)
+	local class = inst.class
+	local h = fetchDirectHierarchy(class)
+	repeat
+		local super = class.super
+		if super then
+			appendTable(h, fetchDirectHierarchy(super))
+		end
+		class = super
+	until not class
+	return h
 end
 
 
+
+
+------------------------------ Apply Stats Steps ------------------------------
+local function getterFunc(id, inst, var, defs, default, dat, datum)
+	local f, d = defs.__f[var], defs.__d[var]
+	local un = unpack
+	local args = {id, inst, var, defs, default, dat, datum}
+	print(un(args))
+	print(f, d)
+	if f and d then
+		return function() return (datum and d(un(args))) or f(un(args)) end
+	elseif f then
+		return function() return datum or f(un(args)) end
+	elseif d then
+		return function() return (datum and d(un(args))) or default end
+	else
+		return function() return datum or default end 
+	end
+end
+--[[
+cases: (for idv)
+	f + d
+		return (data and d(data)) or f() 
+	f
+		return data or f()
+	d
+		return (data and d(data)) or default
+	0
+		return data or default
+--]]
+
+local function printt(t)
+	for k, v in pairs(t) do
+		print(k, v)
+	end
+end
+
+local function handleIdvs(id, inst, h)
+	local dat = Registry.data
+	for _, name in ipairs(h) do
+--		print(name)
+--		if name == "IBoundingBox" then
+--			print('\t\t defaults[name].idv \t\t')
+--			printt(Registry.defaults[name].idv)
+--			print('\t\t defaults[name].instv \t\t')
+--			printt(Registry.defaults[name].instv)
+--		end
+		local defs = Registry.defaults[name].idv or {}
+		for var, default in pairs(defs) do
+--			print(id, inst, defs, var, default, datum)
+			local fstr = getterStr(var)
+			local datum = dat[id] and dat[id][var]
+			inst[fstr] = getterFunc(id, inst, var, defs, default, dat[id], datum)
+		end
+--		print()
+	end
+end
+
+local function handleInstvs(id, inst, h)
+	local dat = Registry.data
+	for _, name in ipairs(h) do
+		local defs = Registry.defaults[name].instv or {}
+		for var, default in pairs(defs) do
+			local datum = dat[id] and dat[id][var]
+			inst[var] = getterFunc(id, inst, var, defs, default, dat[id], datum)()
+		end
+	end
+end
+
+------------------------------ Apply Stats ------------------------------
+function Registry:apply(id, inst)
+	local h = fetchHierarchy(inst)
+--	for k, v in ipairs(h) do print(k, v) end
+	handleIdvs(id, inst, h)
+	handleInstvs(id, inst, h)
+end
+
+--_G.Registry = Registry
+--local Zombie = require "template.Zombie"
+--Zombie(0, 0)
 
 return Registry
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

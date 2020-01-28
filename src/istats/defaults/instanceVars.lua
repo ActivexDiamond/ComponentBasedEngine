@@ -5,7 +5,7 @@ local t = {}
 ------------------------------ IWalk, IJump ------------------------------
 t.movement = {
 	speed = 3,
-	acc = 0.25,
+	acceleration = 0.25,
 	deacceleration = 0.9,
 }
 t.jumping = {

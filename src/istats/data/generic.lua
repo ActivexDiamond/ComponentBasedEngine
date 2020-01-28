@@ -93,10 +93,47 @@ data{"spearStone",
 	},
 }
 
-data{"swordStone",
-	stats = {
-		meleeWeapon = {
-			maxDurability = 50
-			}
-		}
-	}
+
+
+
+
+
+data{"spearStone",
+	maxDurability = 50,
+	cooldown = 2,
+	damage = 5,
+	hitbox = {
+		{
+			anchor = WeaponDef.NATURAL,
+--					transition = WeaponDef.INSTANT,	--- skipped for last phase
+			dur = 15,
+			area = {0, 0, 0.1, 2},
+		},
+	},
+	
+	speed = 2,
+	acceleration = 1,
+	deacceleration = 0.9,
+	
+	width = 32,
+	height = 32 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,4 +1,7 @@
 --[=[
+
+TODO: Optimize operation of the registry.
+
 idVars:
 	- Attached to id, read-only.
 	- Classes/Interfaces requiring idVars must define their defaults in:
@@ -11,6 +14,8 @@ instanceVars:
 	- Applied onto the instance, read-write, each instant holds its own version.
 	- Classes/Interfaces requiring idVars must define their defaults in:
 		 istats/defaults/instv.
+	
+	
 	
 Registry init:
 	Iterate over the following folders, indexing into the following:
@@ -49,7 +54,48 @@ Registry usage:
 				instance[k] = dat[id][k] or v 								--set instance[var] to data[id][var] or defaults.intsv[className][var]
 	
 	
-TODO: Optimize operation of the registry.	
 	
+In-place functions:
+	t.__f is used for default-fallbacks: is called with f(instance, id, t, k, v)
+		- If present for t.__f[k], is indented into getVar() as the default-fallback.
+		- Else, the native-default is indented directly.
+		 
+	t.__d is used for data-computation: is called with f(instance, id, t, k, v, datum)
+		- If present for t.__d[k], is called with the native-default and datum,
+				It's return value is applied into the instance.
+		- Else, the datum is applied directly, else, the native-default is applied.
 	
+	General:
+		1- Take priority over a native-default.					
+		2- Are passed the var (k) and native-default (v), if any.
+		3- [__d only] Are passed the value from the datapack (datum), if any.
+	
+		Terminology:
+			r.t = Registry.defaults.i__v.className
+			
+			instance = the instance being instantiated
+			t = r.t									--aka the class's defaults.i__x
+			k = var 								--aka what is indexed with in r.t[k]
+			v = r.t[k]  							--aka the value of var.
+			native-default   = r.t[k] 				--aka v
+			default-fallback = r.t.__f[k] 			
+			default-compute  = r.t.__f[k]
+			datum			 = r.data.t[k]			--aka the datapack value of var.
+	
+Templates:
+	Used for: 
+		1- Data-driven object creation / during runtime.
+			template = class
+		2- Data-driven template creation (combining) during runtime.
+			template = {class, interface0, interface1, ...}
+
+	Registry:create(id, args)
+		1- Uses the id to fetch a template.
+		2- Fetches the [base] class from template.
+			If any mixins are present, includes them into the class, in order.
+		3- return combinedClass(args) 		--calling the constructor of the [base] class.
+		4- 
+			TODO: Figure out how to pass args/initial-values to the given mixins, if any.	
+
 --]=]
+

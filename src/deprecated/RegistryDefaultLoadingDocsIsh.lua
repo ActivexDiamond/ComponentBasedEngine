@@ -3,10 +3,12 @@ local EShapes = require "behavior.EShapes"
 -- global r is used by the registry to collect the defaults
 
 ------------------------------ Thing ------------------------------
-t = r.Thing			-- r's __index metamethod will create r[k] = k and return it
-
+t = r.idv.Thing			-- r's __index metamethod will create r[k] = k and return it
 t.NAME = "Unnamed"
 t.DESC = "Missing desc."
+
+t = r.instv.Thing
+t.durability = 20
 
 ------------------------------ Rendering ------------------------------
 t = r.IDrawable					--same case as above
@@ -28,23 +30,31 @@ function t.__f:height(id)			--the registry only looks at __f, if any,
 end
 
 --[[
-t.__f is used for default-fallbacks: are called with f(instance, id, k, v)
+t.__f is used for default-fallbacks: is called with f(instance, id, t, k, v)
 	- If present for t.__f[k], is indented into getVar() as the default-fallback.
-	- Else, the native-default is indented directly 	  
-t.__d is used for data-computation: are called with f(instance, id, k, v, datum)
+	- Else, the native-default is indented directly.
+	 
+t.__d is used for data-computation: is called with f(instance, id, t, k, v, datum)
+	- If present for t.__d[k], is called with the native-default and datum,
+			It's return value is applied into the instance.
+	- Else, the datum is applied directly, else, the native-default is applied.
 
+General:
 	1- Take priority over a native-default.					
 	2- Are passed the var (k) and native-default (v), if any.
-	3- [__d only] Are passed the datum from the datapack (datum), if any.
+	3- [__d only] Are passed the value from the datapack (datum), if any.
 
 	Terminology:
 		r.t = Registry.defaults.i__v.className
 		
 		instance = the instance being instantiated
+		t = r.t									--aka the class's defaults.i__x
 		k = var 								--aka what is indexed with in r.t[k]
-		v = r.t[k]  							--aka var
-		native-default = r.t[k] 				--aka v
-		default-fallback = r.t.__f[k] --	
+		v = r.t[k]  							--aka the value of var.
+		native-default   = r.t[k] 				--aka v
+		default-fallback = r.t.__f[k] 			
+		default-compute  = r.t.__f[k]
+		datum			 = r.data.t[k]			--aka the datapack value of var.
 
 --]] 
 ------------------------------ IBoundingBox ------------------------------

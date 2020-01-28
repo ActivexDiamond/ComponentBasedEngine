@@ -2,6 +2,7 @@ local class = require "libs.cruxclass"
 
 local FilepathUtils = require "utils.FilepathUtils"
 local EShapes = require "behavior.EShapes"
+local IBoundingBox = require "behavior.IBoundingBox"
 local WeaponDef = require "template.WeaponDef"
 
 --local Game = require "core.Game"
@@ -12,9 +13,9 @@ function Registry:init()
 	error "Attempting to initialize static class."
 end
 
------------------------------- Data Methods ------------------------------
+------------------------------ Data Env ------------------------------
 local function data(d)
-	local t = Registry.static
+	local t = Registry.static.data
 	local id = d[1]
 	t[id] = t[id] or {}
 	
@@ -23,43 +24,78 @@ local function data(d)
 	end
 end
 
-local function loadAllData()
-	local lovePath = FilepathUtils.love.path.istatsData
-	local luaPath = FilepathUtils.lua.path.istatsData
-	local files = love.filesystem.getDirectoryItems(lovePath)
-	
-	print("Loading all data.")
-	for k, v in ipairs(files) do
-		print(k, v)
-		if v:sub(1, 1) ~= '.' then
-			local type = love.filesystem.getInfo(lovePath .. v).type
-			if type == 'file' then love.filesystem.load(lovePath .. v)() end
-		end
+local mtFuncHolder = {			--Same as the above, but only for __f / __d.
+	__index = function(t, k)
+		assert(k == "__f" or k == "__d", "Only __f or __d are auto-created. Cannot index nil values.")
+		t[k] = {}
+		return t[k]
 	end
-	print("Finished loading all data.")
-end
+}
+local mtTempHolders = {			--If the user attempts to index r.className 
+	__index = function(t, k)			--without initializing it, initialize it implicitly.
+		t[k] = setmetatable({}, mtFuncHolder)
+		return t[k]
+	end
+}
 
------------------------------- Data ------------------------------
-_G.data = data
-_G.WeaponDef = WeaponDef
-loadAllData()
-_G.data = nil
-_G.WeaponDef = nil
-
------------------------------- Defaults ------------------------------
-local D_IDV, D_INSTV
+local tempDefaultsHolder
 do
-	D_IDV = require "istats.defaults.idVars"
-	D_INSTV = require "istats.defaults.instanceVars"
-	local t = require "istats.defaults.masks"
-	D_IDV.categories, D_IDV.masks = t.categories, t.masks
+	local idv = setmetatable({}, mtTempHolders)
+	local instv = setmetatable({}, mtTempHolders)
+	tempDefaultsHolder = {idv = idv, instv = instv}
 end
 
 
+local DslEnv = {
+	print = print,
+	assert = assert,
+	error = error,
+	
+	data = data,
+	r = tempDefaultsHolder,
+	
+	WeaponDef = WeaponDef,
+	EShapes = EShapes,
+	IBoundingBox = IBoundingBox, 
+}
 
-Registry.defaults = {}
-Registry.defaults.idVars = D_IDV
-Registry.defaults.instVars = D_INSTV
+------------------------------ Data Methods ------------------------------
+local function loadFile(file, env)
+	local f = love.filesystem.load(file)
+	setfenv(f, env)
+	f()
+end
+
+local function loadDir(dir, env)
+	local files = love.filesystem.getDirectoryItems(dir)
+	
+	for k, v in ipairs(files) do
+		local file = dir .. v
+		print(file)
+		local type = love.filesystem.getInfo(file).type
+		if type == 'directory' then loadDir(file .. '/', env)
+		elseif type == 'file' then loadFile(file, env) end
+	end
+end
+
+local function loadAll(defaultsEnv, dataEnv)
+	print("Loading defaults.")
+	loadDir(FilepathUtils.love.path.istatsDefaults, defaultsEnv)
+	print("Loading data.")
+	loadDir(FilepathUtils.love.path.istatsData, dataEnv)
+	print("Done loading datapack.")
+end
+
+------------------------------ Data Loading ------------------------------
+do
+	Registry.static.data = {}
+	
+	loadAll(DslEnv, DslEnv)
+	setmetatable(tempDefaultsHolder.idv, {})
+	setmetatable(tempDefaultsHolder.instv, {})
+	Registry.static.defaults = tempDefaultsHolder
+	
+end
 
 ------------------------------ InstanceVars Applier ------------------------------
 function Registry.static:applyStat(id, inst, stat)
@@ -76,52 +112,6 @@ function Registry.static:applyStat(id, inst, stat)
 	return applied
 end
 
------------------------------- Thing ------------------------------
-function Registry.static:getName(id)
-	return self[id] and self[id].name or "$" .. id
-end
 
-function Registry.static:getDesc(id)
-	return self[id] and self[id].desc or self.defaults.DESC
-end
-
------------------------------- Rendering ------------------------------
-function Registry.static:getSpr(id)
-	
-end
-
------------------------------- IBoundingBox ------------------------------
-function Registry.static:getBodyDensity(id)
-	return self[id] and self[id].body and self[id].body.density or D_IDV.BODY_DENSITY
-end
-
-function Registry.static:getBodyMass(id)
-	return self[id] and self[id].body and self[id].body.mass or D_IDV.BODY_MASS
-end
-
-function Registry.static:getBodyFriction(id)
-	return self[id] and self[id].body and self[id].body.friction or D_IDV.BODY_FRICTION
-end
-
-function Registry.static:getBodyRestitution(id)
-	return self[id] and self[id].body and self[id].body.rest or D_IDV.BODY_RESTITUTION
-end
-
-function Registry.static:getShapeType(id)
-	return (self[id] and self[id].body and 
-		EShapes[self[id].body.shape or ""]) or D_IDV.SHAPE_TYPE
-end
-
-function Registry.static:getShapeDat(id)
-	if self[id] and self[id].body then
-		local b = self[id].body
-		return b.w or b.r or D_IDV.SHAPE_A, b.h or D_IDV.SHAPE_B
-	else return D_IDV.SHAPE_A, D_IDV.SHAPE_B end
-end
-
------------------------------- IHealth ------------------------------
-function Registry.static:getMaxHealth(id)
-	return self[id] and self[id].maxHealth or D_IDV.MAX_HEALTH
-end
 
 return Registry

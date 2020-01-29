@@ -1,6 +1,8 @@
 local class = require "libs.cruxclass"
 
 local FilepathUtils = require "utils.FilepathUtils"
+local Tables = require "libs.Tables"
+
 local EShapes = require "behavior.EShapes"
 --local IBoundingBox = require "behavior.IBoundingBox"
 local WeaponDef = require "template.WeaponDef"
@@ -77,8 +79,12 @@ end
 local function loadAll(defaultsEnv, dataEnv)
 	print("Loading defaults.")
 	loadDir(FilepathUtils.love.path.istatsDefaults, defaultsEnv)
+	if DEBUG.DATAPACK_LOAD then Tables.print("defaults", defaultsEnv.r) end
+	 
 	print("Loading data.")
 	loadDir(FilepathUtils.love.path.istatsData, dataEnv)
+	if DEBUG.DATAPACK_LOAD then Tables.print("data", Registry.data) end
+	
 	print("Done loading datapack.")
 	print()
 end
@@ -170,8 +176,6 @@ local function getterFunc(id, inst, var, defs, default, dat, datum)
 	local f, d = defs.__f[var], defs.__d[var]
 	local un = unpack
 	local args = {id, inst, var, defs, default, dat, datum}
-	print(un(args))
-	print(f, d)
 	if f and d then
 		return function() return (datum and d(un(args))) or f(un(args)) end
 	elseif f then
@@ -194,30 +198,15 @@ cases: (for idv)
 		return data or default
 --]]
 
-local function printt(t)
-	for k, v in pairs(t) do
-		print(k, v)
-	end
-end
-
 local function handleIdvs(id, inst, h)
 	local dat = Registry.data
 	for _, name in ipairs(h) do
---		print(name)
---		if name == "IBoundingBox" then
---			print('\t\t defaults[name].idv \t\t')
---			printt(Registry.defaults[name].idv)
---			print('\t\t defaults[name].instv \t\t')
---			printt(Registry.defaults[name].instv)
---		end
 		local defs = Registry.defaults[name].idv or {}
 		for var, default in pairs(defs) do
---			print(id, inst, defs, var, default, datum)
 			local fstr = getterStr(var)
 			local datum = dat[id] and dat[id][var]
 			inst[fstr] = getterFunc(id, inst, var, defs, default, dat[id], datum)
 		end
---		print()
 	end
 end
 

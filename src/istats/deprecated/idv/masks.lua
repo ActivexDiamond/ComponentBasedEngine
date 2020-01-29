@@ -22,7 +22,7 @@ do
 	
 		= 1, 2, 4, 8, 16, 32, 64, 128, 256, 516, 1024, 2048, 4096, 8192, 16384, 32768
 	
-	------------------------------ Masks ------------------------------
+------------------------------ Masks ------------------------------
 	m.NPC = m.HOSTILE_MOB + m.NEUTRAL_MOB + m.PASSIVE_MOB
 	m.MOB = m.NPC + m.PLAYER
 		
@@ -39,8 +39,7 @@ local m = IBoundingBox.masks
 local t = {}
 t.categories = {}
 t.masks = {}
-
------------------------------- Categories ----------------
+------------------------------ Categories ------------------------------
 local c  = t.categories	--self:setCategory(c)
 
 c.unassigned = m.MP
@@ -51,7 +50,7 @@ c.Player = m.PLAYER
 
 --TODO: remove after cleaning up Registry.
 c.Zombie = m.HOSTILE_MOB
------------------------------- Masks---------------------------
+------------------------------ Masks ------------------------------
 local k = t.masks	--self:setMask(m.SOLID - k)
 
 k.unassigned = 0

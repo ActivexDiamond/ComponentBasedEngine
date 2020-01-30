@@ -18,8 +18,6 @@ local Keybinds  = require "core.Keybinds"
 local Player = class("Player", Mob):include(IHealth, IEventHandler, IMeleeAttack)
 function Player:init(x, y)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
 	Mob.init(self, "player", x, y)
-	self:addCategory(IBoundingBox.categories.PLAYER)
-	self:addMask(IBoundingBox.categories.MOB)
 	self.weapon = MeleeWeapon("swordStone")
 end
 

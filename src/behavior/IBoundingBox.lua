@@ -1,13 +1,13 @@
 local Mixins = require "libs.Mixins"
-local EShapes = require "behavior.EShapes"
+local Tables = require "libs.Tables"
 
 ------------------------------ Private Methods ------------------------------
-local function getShape(s, a, b, c)
-	local p, e, f = love.physics, EShapes
+local function getShape(self, s, a, b, c)
+	local p, f = love.physics
 	
-	if s == e.RECT then f = p.newRectangleShape
-	elseif s == e.CIRCLE then f = p.newCircleShape
-	elseif s == e.POLY then f = p.newPolygonShape end
+	if s == self.RECT then f = p.newRectangleShape
+	elseif s == self.CIRCLE then f = p.newCircleShape
+	elseif s == self.POLY then f = p.newPolygonShape end
 	--TODO: add more shapes
 	
 	--if b ~= nil, then offset at a/2, b/2 (rect),
@@ -16,11 +16,12 @@ local function getShape(s, a, b, c)
 --	return f(0, 0, a, b, c)
 end
 
-local function checkShapeDat(st, d)
+local function checkShapeDat(self, d)
+	local st = self.shapeType
 	d = d:lower()
-	if st == EShapes.RECT then
+	if st == self.RECT then
 		return d == 'w' or d == 'h' or d == 'angle'
-	elseif st == EShapes.CIRCLE then
+	elseif st == self.CIRCLE then
 		return d == 'r'
 	end
 	return false
@@ -54,7 +55,7 @@ function IBoundingBox:init(world, x, y, userData,
 	self.baseBodyMass = bodyMass
 	self.a, self.b, self.c = a, b, c
 	self.body = love.physics.newBody(world, x, y, bodyType)
-	self.shape = getShape(shapeType, a, b, c)
+	self.shape = getShape(self, shapeType, a, b, c)
 	self.fixture = love.physics.newFixture(self.body, self.shape)
 	
 	if bodyDensity then self.fixture:setDensity(bodyDensity) end
@@ -65,26 +66,90 @@ function IBoundingBox:init(world, x, y, userData,
 		self.body:setMassData(x, y, bodyMass, i * bodyMass / m)
 	end	
 	if userData then self.fixture:setUserData(userData) end
+	
+	if DEBUG.MASKS then
+		local c = utils.toBin(self:getCategory(), 16, 4) 
+		local m = utils.toBin(self:getMask(), 16, 4)
+		local str = "%s\tcategory:%s\tmask:%s"
+		local name = tostring(self)
+		if name:len() < 40 then
+			for i = 1, 40 - name:len() do
+				name = name .. ' '
+			end
+		end
+		print(str:format(name, c, m))
+	end
+	self:setCategory(self:getCategory())
+	self:setMask(self:getMask())
 end
-
 ------------------------------ Constants ------------------------------
-IBoundingBox.categories = {}
-IBoundingBox.categories.WORLD_OBJ = 2
-IBoundingBox.categories.BLOCK = 4
+IBoundingBox.RECT = 0
+IBoundingBox.CIRCLE = 1
+IBoundingBox.POLY = 2
 
-IBoundingBox.categories.ENTITY = 8
-IBoundingBox.categories.MOB = 16
-IBoundingBox.categories.PASSIVE_MOB = 32
-IBoundingBox.categories.HOSTILE_MOB = 64
-IBoundingBox.categories.NEUTRAL_MOB = 128
-
-IBoundingBox.categories.PLAYER = 256
-
+------------------------------ Categories (Endpoints) ------------------------------
 IBoundingBox.masks = {}
-IBoundingBox.masks.NONE = 0
-IBoundingBox.masks.ALL = 65535
+local m = IBoundingBox.masks
 
------------------------------- Categories / Mask ------------------------------
+--Nibble 1
+m.BLOCK,
+m.FREE,
+m.FREE,
+m.FREE,
+
+--Nibble 2; Misc. Entities
+m.ITEM_DROP,
+m.FREE,
+m.FREE,
+m.FREE,
+
+--Nibble 3; Mobs
+m.HOSTILE_MOB,
+m.NEUTRAL_MOB,
+m.PASSIVE_MOB,
+m.PLAYER,
+
+--Nibble 4; Projectiles
+m.NPC_PRJ,
+m.PLAYER_PRJ,
+m.FREE,
+m.MP		--TODO: Should an instance being created with m.MP emit an error or be allowed?
+
+--2^0 through 2^15 (16bits)
+	= 1, 2, 4, 8, 16, 32, 64, 128, 256, 516, 1024, 2048, 4096, 8192, 16384, 32768
+--[[
+Hierarchy:
+Solid ->
+	Block |E|
+	
+	Entity ->
+		ItemDrop |E|
+		Projectile ->
+			PlayerPrj |E|
+			NpcPrj |E|
+		Mob ->
+			Player |E|
+			Npc ->
+				Hostile |E|
+				Neutral |E|
+				Passive |E|
+		
+Powers:
+	1   2   4   8      16   32   64   128      256   512   1024   2048      4096   8192   16384   32768
+	1   2   4   8      10   20   40   80       100   200   400    800       1000   2000   4000    8000 
+--]]
+
+------------------------------ Masks ------------------------------
+m.NPC = m.HOSTILE_MOB + m.NEUTRAL_MOB + m.PASSIVE_MOB
+m.MOB = m.NPC + m.PLAYER
+	
+m.PRJ = m.NPC_PRJ + m.PLAYER_PRJ
+
+m.ENTITY = m.PRJ + m.MOB + m.ITEM_DROP
+
+m.SOLID = m.ENTITY + m.BLOCK
+
+------------------------------ Category/Mask Methods ------------------------------
 function IBoundingBox:setCategory(c)	
 	local _, mask, group = self.fixture:getFilterData()
 	self.fixture:setFilterData(c, mask, group)
@@ -93,7 +158,6 @@ function IBoundingBox:addCategory(c)	--TODO: check if category is already assign
 	local cat, mask, group = self.fixture:getFilterData()
 	self.fixture:setFilterData(cat + c, mask, group)
 end
-
 function IBoundingBox:removeCategory(c)	
 	local cat, mask, group = self.fixture:getFilterData()
 	self.fixture:setFilterData(cat - c, mask, group)
@@ -103,12 +167,10 @@ function IBoundingBox:setMask(m)
 	local cat, _, group = self.fixture:getFilterData()
 	self.fixture:setFilterData(cat, m, group)
 end
-
 function IBoundingBox:addMask(m)	
 	local cat, mask, group = self.fixture:getFilterData()
 	self.fixture:setFilterData(cat, mask + m, group)
 end
-
 function IBoundingBox:removeMask(m)	
 	local cat, mask, group = self.fixture:getFilterData()
 	self.fixture:setFilterData(cat, mask - m, group)
@@ -139,53 +201,53 @@ end
 
 ------------------------------ Rectangle Data Getters ------------------------------
 function IBoundingBox:getW()
-	assert(checkShapeDat(self.shapeType, 'w'), "getW can only be called on rectangular BoundingBoxes.")
+	assert(checkShapeDat(self, 'w'), "getW can only be called on rectangular BoundingBoxes.")
 	return self.a
 end
 
 function IBoundingBox:getH()
-	assert(checkShapeDat(self.shapeType, 'h'), "getH can only be called on rectangular BoundingBoxes.")
+	assert(checkShapeDat(self, 'h'), "getH can only be called on rectangular BoundingBoxes.")
 	return self.b
 end
 
 function IBoundingBox:getAngle()
 	error "WIP"
-	assert(checkShapeDat(self.shapeType, 'angle'), "getAngle can only be called on rectangular BoundingBoxes.")
+	assert(checkShapeDat(self, 'angle'), "getAngle can only be called on rectangular BoundingBoxes.")
 	return self.c
 end
 
 function IBoundingBox:getDims()
-	assert(checkShapeDat(self.shapeType, 'w')
-		and checkShapeDat(self.shapeType, 'h'), "getDims can only be called on rectangular BoundingBoxes.")
+	assert(checkShapeDat(self, 'w')
+		and checkShapeDat(self, 'h'), "getDims can only be called on rectangular BoundingBoxes.")
 --		and checkShapeDat(self.shapeType, 'angle'),"getDims can only be called on rectangular BoundingBoxes.")
 	return self.a, self.b --, self.c or 0
 end
 
 ------------------------------ Rectangle Data Setters ------------------------------
 function IBoundingBox:setW(w)
-	assert(checkShapeDat(self.shapeType, 'w'), "getW can only be called on rectangular BoundingBoxes.")
+	assert(checkShapeDat(self, 'w'), "getW can only be called on rectangular BoundingBoxes.")
 	self.a = w; self:reshape()
 end
 
 function IBoundingBox:setH(h)
-	assert(checkShapeDat(self.shapeType, 'h'), "getH can only be called on rectangular BoundingBoxes.")
+	assert(checkShapeDat(self, 'h'), "getH can only be called on rectangular BoundingBoxes.")
 	self.b = h; self:reshape()
 end
 
 function IBoundingBox:setAngle(a)
-	assert(checkShapeDat(self.shapeType, 'angle'), "getAngle can only be called on rectangular BoundingBoxes.")
+	assert(checkShapeDat(self, 'angle'), "getAngle can only be called on rectangular BoundingBoxes.")
 	self.c = a; self:reshape()
 end
 
 function IBoundingBox:setDims(w, h, a)
-	assert(checkShapeDat(self.shapeType, 'w') 
-		and checkShapeDat(self.shapeType, 'h'), "getDims can only be called on rectangular BoundingBoxes.")
+	assert(checkShapeDat(self, 'w') 
+		and checkShapeDat(self, 'h'), "getDims can only be called on rectangular BoundingBoxes.")
 	self.a, self.b, self.c = w, h, a; self:reshape()
 end
 
 ------------------------------ Circle Data Getters ------------------------------
 function IBoundingBox:getRadius()
-	assert(checkShapeDat(self.shapeType, 'r'), "getRadius can only be called on circular BoundingBoxes.")
+	assert(checkShapeDat(self, 'r'), "getRadius can only be called on circular BoundingBoxes.")
 	return self.a
 end
 
@@ -195,14 +257,14 @@ end
 
 ------------------------------ Circle Data Setters ------------------------------
 function IBoundingBox:setRadius(r)
-	assert(checkShapeDat(self.shapeType, 'r'), "getRadius can only be called on circular BoundingBoxes.")
+	assert(checkShapeDat(self, self, 'r'), "getRadius can only be called on circular BoundingBoxes.")
 	self.a = r; self:reshape()
 end
 
 ------------------------------ Helper Methods ------------------------------
 function IBoundingBox:_reshape()
 	--TODO: Test; see if fixture requires refreshing too.
-	self.s = getShape(self.shapeType, self.a, self.b, self.c)
+	self.s = getShape(self, self.shapeType, self.a, self.b, self.c)
 end
 
 ------------------------------ Object-common Methods ------------------------------

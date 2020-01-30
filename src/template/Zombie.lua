@@ -4,8 +4,6 @@ local IHealth = require "behavior.IHealth"
 local IHittable = require "behavior.IHittable"
 local IBoundingBox = require "behavior.IBoundingBox"
 
-local MathUtils = require "libs.MathUtils"
-
 local Game = require "core.Game"
 --local Registry = require "istats.Registry"
 
@@ -31,11 +29,8 @@ end
 ------------------------------ Constructor ------------------------------ 
 local Zombie = class("Zombie", Mob):include(IHealth, IHittable)
 function Zombie:init(x, y)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
-	Mob.init(self, "zombie", x, y)
-	self:addCategory(IBoundingBox.categories.HOSTILE_MOB)
-	self:addMask(IBoundingBox.categories.PLAYER)
+	Mob.init(self, "mobZombie", x, y)
 	self.path = Mob.LEFT
---	print(self.fixture:getFilterData())
 end
 
 ------------------------------ Main Methods ------------------------------
@@ -60,12 +55,12 @@ function Zombie:draw(g)
 	local x, y, w, h = self:getX(), self:getY(), self:getW(), self:getH()
 	x = x + 0.1
 	y = y - 0.2
-	w = (w - 0.2) * MathUtils.map(health, 0, healthMax, 0, 1)
+	w = (w - 0.2) * utils.map(health, 0, healthMax, 0, 1)
 	h = 0.15
 
 	local r, gr, b, a = 1, 1, 0, 1
-	r = MathUtils.map(health, 0, healthMax, 1, 0)
-	gr = MathUtils.map(health, 0, healthMax, 0, 1)
+	r = utils.map(health, 0, healthMax, 1, 0)
+	gr = utils.map(health, 0, healthMax, 0, 1)
 	
 	g.setColor(r, gr, b, a)
 	g.rectangle('fill', x, y, w, h)

@@ -108,8 +108,6 @@ end
 local Mob = class("Mob", Entity) --TODO: refactor out into IWalk, IJump
 function Mob:init(id, x, y)
 	Entity.init(self, id, x, y)
-	self:addCategory(IBoundingBox.categories.MOB)
-	
 	self.state = MultiState()
 	self.dir = Mob.RIGHT	
 	self.jumpsRemaining = self.totalJumps
@@ -184,6 +182,9 @@ function Mob:_jump()
 		self:_setJumpingVelocity()
 	end
 end
+
+------------------------------ Getters ------------------------------
+function Mob:getDir() return self.dir end
 
 return Mob
 

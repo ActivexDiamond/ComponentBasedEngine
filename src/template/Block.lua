@@ -9,7 +9,6 @@ local Game = require "core.Game"
 local Block = class("Block", WorldObj)
 function Block:init(id, x, y)
 	WorldObj.init(self, id, Game:snap(x), Game:snap(y), 'static')	
-	self:addCategory(IBoundingBox.categories.BLOCK)
 end
 
 ------------------------------ Main Methods ------------------------------

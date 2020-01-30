@@ -1,22 +1,23 @@
 local Mixins = require "libs.Mixins"
 local Evsys = require "evsys.Evsys"
 
-local IEventHandler = {}
+local IEventHandler = Mixins("IEventHandler")
 
 ---Setup
 function IEventHandler:__included(class)
-	print('__inc', self, class)
 	Evsys:lockOn(class)
 end
 
 Mixins.onPostInit(IEventHandler, function(self)
-	print 'x'
+	if DEBUG.EVENT_SUBS then print(string.format("%s\t Subscribed to the evsys.", self)) end
 	Evsys:subscribe(self)
 end)
 
 ---Methods
 function IEventHandler:attach(e, f)
-	print 'y'
+	if DEBUG.EVENT_ATTACHES then 
+		print(string.format("[%s] attached [%s] to [%s].", self, f, e.__name__)) 
+	end
 	Evsys:attach(e, f)
 end
 

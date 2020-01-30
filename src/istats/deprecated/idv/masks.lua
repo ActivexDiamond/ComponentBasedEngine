@@ -1,40 +1,5 @@
------------------------------- Categories (Endpoints) ------------------------------
-local IBoundingBox = {}
-do
-	IBoundingBox.masks = {}
-	local m = IBoundingBox.masks
-	m.BLOCK,
-	m.FREE,
-	m.FREE,
-	m.FREE,
-	m.ITEM_DROP,
-	m.FREE,
-	m.FREE,
-	m.FREE,
-	m.HOSTILE_MOB,
-	m.NEUTRAL_MOB,
-	m.PASSIVE_MOB,
-	m.PLAYER,
-	m.NPC_PRJ,
-	m.PLAYER_PRJ,
-	m.FREE,
-	m.MP		
-	
-		= 1, 2, 4, 8, 16, 32, 64, 128, 256, 516, 1024, 2048, 4096, 8192, 16384, 32768
-	
------------------------------- Masks ------------------------------
-	m.NPC = m.HOSTILE_MOB + m.NEUTRAL_MOB + m.PASSIVE_MOB
-	m.MOB = m.NPC + m.PLAYER
-		
-	m.PRJ = m.NPC_PRJ + m.PLAYER_PRJ
-	
-	m.ENTITY = m.PRJ + m.MOB + m.ITEM_DROP
-	
-	m.SOLID = m.ENTITY + m.BLOCK
-end
+local IBoundingBox = require "FIX THE REGISTRY"
 
-
----======================== TODO: Fix the registry =============================
 local m = IBoundingBox.masks
 local t = {}
 t.categories = {}

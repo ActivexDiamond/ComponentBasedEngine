@@ -1,6 +1,7 @@
 --require "box2dMeterTest"
 ---[[
 require "DEBUG"
+require "globals"
 
 local Registry = require "istats.Registry"
 
@@ -64,52 +65,51 @@ function love.load()
 	player = Player(12, 12)
 	zombie = Zombie(16, 12)
 --	zombie1 = Zombie(17, 12)
---	zombie2 = Zombie(18, 12)
-	
+--	zombie2 = Zombie(18, 12)	
 --	local interval, total = -1, 0.5
-	local interval, total = 0.5, 5
-	function getClosure0(dt, ...)
-		local tdt = 0
-		local fdt = 0
-		local x = 0
-		return function (dt)
-			x = x + 1
-			print('ping' .. x)
-			
-			if x == 1 then fdt = dt end
-			tdt = tdt + dt 
-			local round = interval == -1 and 0 or interval
-			local per = math.min(tdt / (total - round), 1)
-			local per = tdt / (total - round)
-			print('dt', dt, 'tdt', tdt, 'per', per)
-		end
-	end
-
-	local getTime = love.timer.getTime
-	function getClosure1(dt, ...)
-		local stamp = getTime()
-		local x = 0
-		return function (dt)
-			x = x + 1
-			print('ping' .. x)
-			local tdt = getTime() - stamp
-			local round = interval == -1 and 0 or interval
-			local per = math.min(tdt / (total - round), 1)
-			local per = tdt / (total - round)
-			print('dt', dt, 'tdt', tdt, 'per', per)
-		end
-	end
-		
-	function getClosure2(dt, ...)
-		local tdt = 0
-		return function (dt)
-			tdt = tdt + dt 
-			local round = interval == -1 and 0 or interval
-			local per = math.min(tdt / (total - round), 1)
-			local per = tdt / (total - round)
-			print('dt', dt, 'tdt', tdt, 'per', per)
-		end
-	end
+--	local interval, total = 0.5, 5
+--	function getClosure0(dt, ...)
+--		local tdt = 0
+--		local fdt = 0
+--		local x = 0
+--		return function (dt)
+--			x = x + 1
+--			print('ping' .. x)
+--			
+--			if x == 1 then fdt = dt end
+--			tdt = tdt + dt 
+--			local round = interval == -1 and 0 or interval
+--			local per = math.min(tdt / (total - round), 1)
+--			local per = tdt / (total - round)
+--			print('dt', dt, 'tdt', tdt, 'per', per)
+--		end
+--	end
+--
+--	local getTime = love.timer.getTime
+--	function getClosure1(dt, ...)
+--		local stamp = getTime()
+--		local x = 0
+--		return function (dt)
+--			x = x + 1
+--			print('ping' .. x)
+--			local tdt = getTime() - stamp
+--			local round = interval == -1 and 0 or interval
+--			local per = math.min(tdt / (total - round), 1)
+--			local per = tdt / (total - round)
+--			print('dt', dt, 'tdt', tdt, 'per', per)
+--		end
+--	end
+--		
+--	function getClosure2(dt, ...)
+--		local tdt = 0
+--		return function (dt)
+--			tdt = tdt + dt 
+--			local round = interval == -1 and 0 or interval
+--			local per = math.min(tdt / (total - round), 1)
+--			local per = tdt / (total - round)
+--			print('dt', dt, 'tdt', tdt, 'per', per)
+--		end
+--	end
 --	Scheduler:callEveryFor(interval, total, getClosure0())
 
 --	Scheduler:callEveryFor(interval, total, getClosure0(), nil, function()
@@ -172,7 +172,49 @@ function love.load()
 --		love.graphics.rectangle('fill', 3, 3, 3, 3)
 --	end
 --	Scheduler:gCallEveryFor(2, 30, rect)
+
 end
+
+local b = utils.toBin
+print(b(0))
+print(b(1))
+print(b(2))
+print(b(3))
+print(b(4))
+
+print()
+
+print(b(15))
+print(b(16))
+
+print()
+
+print(b(31))
+print(b(32))
+	
+print( " ------------- ")
+print(b(0, 16, 4))
+print(b(1, 16, 4))
+print(b(2, 16, 4))
+print(b(3, 16, 4))
+print(b(4, 16, 4))
+
+print(b(5, 16, 4))
+print(b(6, 16, 4))
+print(b(7, 16, 4))
+print(b(8, 16, 4))
+print(b(9, 16, 4))
+
+print()
+
+print(b(15))
+print(b(16))
+
+print()
+
+print(b(31))
+print(b(32))
+
 
 local dir = 0;
 function love.update(dt)

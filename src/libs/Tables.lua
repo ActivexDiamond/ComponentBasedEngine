@@ -1,10 +1,9 @@
--- puts methods in the global 'table' package, because might as well
+local tables = {}
 
--- insert all contents of t2+..., into t1. Using the same keys/indices that t2 used.
--- override if necessary
-local Tables = {}
-
-function Tables.insertTables(...)
+------------------------------ addByIndex ------------------------------
+---insert all contents of t2+..., into t1. Using the same keys/indices that t2 used,
+--override if necessary.
+function tables.fAddByIndex(...)
 	local args = {...}
 	local t = args[1]
 	for i = 1, #args do
@@ -14,7 +13,7 @@ function Tables.insertTables(...)
 	end
 end
 
-function Tables.addTable(...)
+function tables.addByIndex(...)
 	local args = {...}
 	local t = args[1]
 	for i = 1, #args do
@@ -24,10 +23,12 @@ function Tables.addTable(...)
 	end
 end
 
--- return new table containing a combinations of t1 and t2 ...
--- override if necessary
--- similar to table.insertTable, except it returns a new table, not altering t1/t2
-function Tables.combine(...)
+------------------------------ Non-Mutating AddByIndex ------------------------------
+---return new table containing a combinations of t1 and t2 ...
+--override if necessary.
+--similar to table.fAddByIndex, except it returns a new table, not altering t1/t2.
+--non-mutating, forced, addByIndex.
+function tables.nfAddByIndex(...)
 	local args = {...}
 	local t = {}
 	
@@ -39,8 +40,36 @@ function Tables.combine(...)
 	return t
 end
 
--- prints the all k, v pairs in the given table(s)
-function Tables.print(...)
+------------------------------ Misc. Utils ------------------------------
+function tables.clone(t2)
+	local t = {}
+	for k, v in pairs(t2) do
+		t[k] = v
+	end
+	return t
+end
+
+function tables.isEmpty(t)
+	local b = true
+	for _, _ in pairs(t) do
+		b = false
+	end
+	return b
+end
+
+function tables.isEmptyDeep(t)
+	local b = true
+	for _, v in pairs(t) do
+		if type(v) == 'table' then
+			b = tables.isEmptyDeep(v)
+		else b = false end
+	end
+	return b
+end
+
+------------------------------ Debug-Utils ------------------------------
+---Prints the all k, v pairs in the given table(s).
+function tables.print(...)
 	local args = {...}
 	local n, ind
 	
@@ -71,18 +100,18 @@ function Tables.print(...)
 		io.write('\n')
 		indent(ind)
 		print(" table is nil.")
-	elseif Tables.isEmpty(t) then
+	elseif tables.isEmpty(t) then
 	 	io.write('\n')
 		indent(ind)
 		print(" table is empty.")
 	end
 	
 	for i = n, #args do
-	if not Tables.isEmpty(args[i]) then
+	if not tables.isEmpty(args[i]) then
 			io.write("\n")
 			for k, v in pairs(args[i]) do
 				if type(v) == 'table' then
-					Tables.print(tostring(k), ind + 4, v)
+					tables.print(tostring(k), ind + 4, v)
 				else
 					indent(ind)
 					local index = i - (n-1)
@@ -100,24 +129,4 @@ function Tables.print(...)
 	if ind == 0 then io.write('\n') end
 end
 
-function Tables.isEmpty(t)
-	local b = true
-	for _, _ in pairs(t) do
-		b = false
-	end
-	return b
-end
-
-
-
-function Tables.isEmptyDeep(t)
-	local b = true
-	for _, v in pairs(t) do
-		if type(v) == 'table' then
-			b = Tables.isEmptyDeep(v)
-		else b = false end
-	end
-	return b
-end
-
-return Tables
+return tables

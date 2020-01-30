@@ -3,6 +3,8 @@ local IBoundingBox = require "behavior.IBoundingBox"
 local IHittable = require "behavior.IHittable"
 local WeaponDef = require "template.WeaponDef"
 
+local Mob = require "template.Mob"
+
 local Scheduler = require "utils.Scheduler"
 local Game = require "core.Game"
 
@@ -57,6 +59,11 @@ end
 local function alignCoords(self, anchor, area)
 	local ox, oy = self:getPos()
 	local ow, oh = self:getDims()
+	if self:instanceof(Mob) and self:getDir() == Mob.LEFT then
+		local x1, y1, x2, y2 = unpack(area)
+		x2 = x2 - ((x2 - x1) * 2)
+		area = {x1, y1, x2, y2}
+	end
 	if anchor == WeaponDef.anchors.ORIGIN then return alignOrigin(ox, oy, ow, oh, unpack(area))
 	elseif anchor == WeaponDef.anchors.CENTER then return alignCenter(ox, oy, ow, oh, unpack(area))
 	elseif anchor == WeaponDef.anchors.NATURAL then return alignNatural(ox, oy, ow, oh, unpack(area)) end

@@ -1,3 +1,4 @@
+------------------------------ Blocks ------------------------------
 data{"logOak", 
 	name = "Oak Log",
 	desc = "Log(0)"
@@ -13,11 +14,22 @@ data{"stickWood",
 	desc = "*pokes it with a stick*"
 }
 
+------------------------------ Mobs ------------------------------
 data{"mobZombie",
 	name = "Undead",
 	desc = "Zombie",
-	maxHealth = 50
-}
+	
+	speed = 1.5,
+	totalJumps = 1,
+	maxHealth = 50,
+	
+	w = 0.8,
+	h = 1.1,
+	mass = 1,
+	friction = 0,
+	category = masks.HOSTILE_MOB,
+	mask = masks.NPC + masks.ITEM_DROP,
+}	-- 0011 1000 0000 0001
 
 data{"player",
 	speed = 3,
@@ -27,21 +39,12 @@ data{"player",
 	h = 1,
 	mass = 1,
 	friction = 0,
+	
+	category = masks.PLAYER,
+	mask = masks.PLAYER + masks.PLAYER_PRJ,
 }
 
-data{"zombie",
-	speed = 1.5,
-	totalJumps = 1,
-
-	w = 0.8,
-	h = 1.1,
-	mass = 1,
-	friction = 0,
-	shape = 'RECT'
-}
-
-
-
+------------------------------ Weapons ------------------------------
 data{"swordStone",
 	maxDurability = 50,
 	cooldown = 2,

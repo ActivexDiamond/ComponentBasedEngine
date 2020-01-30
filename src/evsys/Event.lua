@@ -1,6 +1,6 @@
 local class = require "libs.cruxclass"
 
----Readonly util
+---Read-only util
 local function xlock(self)
 	local inv = {}
 	for k, v in pairs(self) do
@@ -45,6 +45,7 @@ local function lock(self)
 	return setmetatable(inv, {
 		__index = self,
 		__newindex = function() error "All Event fields are read-only." end,
+		__tostring = self.__tostring,
 	})
 end
 

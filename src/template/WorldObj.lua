@@ -18,9 +18,6 @@ function WorldObj:init(id, x, y, bodyType, angle)
 		self:getBodyFriction(), self:getBodyRestitution(),
 		self:getShapeType(), a, b, angle)
 	self:setFixedRotation(true)
-	
-	self:setCategory(IBoundingBox.categories.WORLD_OBJ)
-	self:setMask(IBoundingBox.categories.WORLD_OBJ)
 end
 
 return WorldObj

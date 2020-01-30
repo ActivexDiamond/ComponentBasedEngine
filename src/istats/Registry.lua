@@ -1,11 +1,11 @@
 local class = require "libs.cruxclass"
 
 local FilepathUtils = require "utils.FilepathUtils"
-local Tables = require "libs.Tables"
 
 local EShapes = require "behavior.EShapes"
---local IBoundingBox = require "behavior.IBoundingBox"
+local IBoundingBox = require "behavior.IBoundingBox"
 local WeaponDef = require "template.WeaponDef"
+local Item = require "template.Item"
 
 --local Game = require "core.Game"
 
@@ -47,6 +47,8 @@ local tempDefaultsHolder = setmetatable({}, mtDefaultsHolder)
 
 local dslEnv = {
 	print = print, pairs = pairs, ipairs = ipairs,
+	string = string, table = table, os = os,
+	tostring = tostring, tonumber = tonumber,
 	assert = assert, error = error,
 	
 	data = data,
@@ -54,7 +56,9 @@ local dslEnv = {
 	
 	WeaponDef = WeaponDef,
 	EShapes = EShapes,
-	IBoundingBox = IBoundingBox, 
+	IBoundingBox = IBoundingBox,
+	masks = IBoundingBox.masks, 
+	Item = Item,
 }
 
 ------------------------------ Data Methods ------------------------------
@@ -69,7 +73,7 @@ local function loadDir(dir, env)
 	
 	for k, v in ipairs(files) do
 		local file = dir .. v
-		print('\t' .. file)
+		if DEBUG.DATAPACK_LOAD then print('\t' .. file) end
 		local type = love.filesystem.getInfo(file).type
 		if type == 'directory' then loadDir(file .. '/', env)
 		elseif type == 'file' then loadFile(file, env) end
@@ -79,11 +83,11 @@ end
 local function loadAll(defaultsEnv, dataEnv)
 	print("Loading defaults.")
 	loadDir(FilepathUtils.love.path.istatsDefaults, defaultsEnv)
-	if DEBUG.DATAPACK_LOAD then Tables.print("defaults", defaultsEnv.r) end
+	if DEBUG.DATAPACK_CONTENTS then utils.t.print("defaults", defaultsEnv.r) end
 	 
 	print("Loading data.")
 	loadDir(FilepathUtils.love.path.istatsData, dataEnv)
-	if DEBUG.DATAPACK_LOAD then Tables.print("data", Registry.data) end
+	if DEBUG.DATAPACK_CONTENTS then utils.t.print("data", Registry.data) end
 	
 	print("Done loading datapack.")
 	print()
@@ -173,9 +177,11 @@ end
 
 ------------------------------ Apply Stats Steps ------------------------------
 local function getterFunc(id, inst, var, defs, default, dat, datum)
+	if var == "__f" or var == "__d" then return nil end
 	local f, d = defs.__f[var], defs.__d[var]
 	local un = unpack
 	local args = {id, inst, var, defs, default, dat, datum}
+	print(un(args))
 	if f and d then
 		return function() return (datum and d(un(args))) or f(un(args)) end
 	elseif f then
@@ -204,8 +210,9 @@ local function handleIdvs(id, inst, h)
 		local defs = Registry.defaults[name].idv or {}
 		for var, default in pairs(defs) do
 			local fstr = getterStr(var)
-			local datum = dat[id] and dat[id][var]
-			inst[fstr] = getterFunc(id, inst, var, defs, default, dat[id], datum)
+			local idDat = dat[id] or {}
+			local datum = idDat[var]
+			inst[fstr] = getterFunc(id, inst, var, defs, default, idDat, datum)
 		end
 	end
 end
@@ -216,7 +223,8 @@ local function handleInstvs(id, inst, h)
 		local defs = Registry.defaults[name].instv or {}
 		for var, default in pairs(defs) do
 			local datum = dat[id] and dat[id][var]
-			inst[var] = getterFunc(id, inst, var, defs, default, dat[id], datum)()
+			local f = getterFunc(id, inst, var, defs, default, dat[id], datum)
+			inst[var] = f and f()
 		end
 	end
 end

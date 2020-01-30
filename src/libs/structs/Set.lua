@@ -1,4 +1,4 @@
-return function(...)	--- Set()
+return function(...)		-- Set()
 	local self = {...}
 	
 	function self.add(o) 

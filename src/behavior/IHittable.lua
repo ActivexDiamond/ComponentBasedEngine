@@ -11,13 +11,13 @@ local Game = require "core.Game"
 
 ------------------------------ Setup ------------------------------
 local IHittable = Mixins("IHittable")
-Mixins.onPostInit(IHittable, function(self)
+function IHittable:__postInit()
 	assert(self:instanceof(IBoundingBox), "IMeleeAttack can only be applied on instances of IBoundingBox")
 	assert(self:instanceof(IHealth), "IMeleeAttack can only be applied on instances of IHealth")
 	self.invicCooldownMax = self.invicCooldownMax or 0.5
 --	self.invicCooldown = self.invicCooldown or 0
 	self.invic = false
-end)
+end
 
 ------------------------------ Main Methods ------------------------------
 function IHittable:getHit(attacker, dmg, knockback, effects)

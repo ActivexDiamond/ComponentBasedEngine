@@ -23,7 +23,7 @@ function Thing:idEquals(o)
 end
 
 function Thing:__tostring()
-	return string.format("[%s] with ID: %s", 
+	return string.format("[%s:%s]", 
 		self.class.__name__, self.id)
 end 
 

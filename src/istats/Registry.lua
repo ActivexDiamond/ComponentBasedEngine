@@ -5,7 +5,7 @@ local FilepathUtils = require "utils.FilepathUtils"
 local EShapes = require "behavior.EShapes"
 local IBoundingBox = require "behavior.IBoundingBox"
 local WeaponDef = require "template.WeaponDef"
-local Item = require "template.Item"
+--local Item = require "template.Item"
 
 --local Game = require "core.Game"
 
@@ -50,6 +50,7 @@ local dslEnv = {
 	string = string, table = table, os = os,
 	tostring = tostring, tonumber = tonumber,
 	assert = assert, error = error,
+	love = love,
 	
 	data = data,
 	r = tempDefaultsHolder,
@@ -181,7 +182,6 @@ local function getterFunc(id, inst, var, defs, default, dat, datum)
 	local f, d = defs.__f[var], defs.__d[var]
 	local un = unpack
 	local args = {id, inst, var, defs, default, dat, datum}
-	print(un(args))
 	if f and d then
 		return function() return (datum and d(un(args))) or f(un(args)) end
 	elseif f then
@@ -242,31 +242,3 @@ end
 --Zombie(0, 0)
 
 return Registry
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

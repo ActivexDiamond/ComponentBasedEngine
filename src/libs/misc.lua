@@ -66,7 +66,7 @@ function misc.toBin(n, bits, seg, space, sep)
 end
 
 ------------------------------ Lua-Related ------------------------------
-function misc.overload(t, ...)			--selectArg(type, args)
+function misc.selectArg(t, ...)			--selectArg(type, args)
 	local i, p = 1, tonumber(t:sub(1, 1))
 	if type(p) == 'number' then
 		i, t = p, t:sub(2, -1)
@@ -84,4 +84,186 @@ function misc.overload(t, ...)			--selectArg(type, args)
 	end
 end
 
+do
+	local UNDEF = {}
+	---Create Helpers
+	local function createHelpers(stack)
+		local cur = function() return type(stack[1]) end 
+		local pop = function(t) return table.remove(t or stack, 1) end
+		local add = function(t, obj) return table.insert(t or stack, obj) end
+		return cur, pop, add
+	end
+	
+	local function cleanNils(t)
+		local n = 0
+		for k, v in pairs(t) do n = math.max(k, n) end
+		if n == 0 then return t end
+		for i = 1, n do
+			if type(t[i]) == 'nil' then t[i] = UNDEF end 
+		end
+		return t
+	end
+
+	---Get Flag
+	local function getFlag(fParams)
+		local flag;
+		local cur, pop, add = createHelpers(fParams)
+		if cur() == 'string' then
+			local arg1 = fParams[1]
+			flag = arg1:sub(1, 1) == '-' and arg1 or nil
+		end
+		if flag then pop() end
+		return flag
+	end
+	
+	---Cleaners
+	local function cleanupFuncArgs(fCleanup, fArgs)
+		if fCleanup == -1 or not fArgs then return fArgs end
+		local cur, pop, add = createHelpers(fCleanup)
+		local cleanFuncArgs = {}
+		local cleaner = pop()
+		if #fCleanup == 0 then
+			for k, v in ipairs(fArgs) do cleanFuncArgs[k] = cleaner(v) end
+		else 
+			cleanFuncArgs = fArgs
+			for _, i in ipairs(fCleanup) do
+				cleanFuncArgs[i] = cleaner(fArgs[i])
+			end		
+		end
+		return cleanFuncArgs
+	end
+	
+	local function cleanupAllArgs(...)
+		local args = {...} 
+ 		local cur, pop, add = createHelpers(args)
+		local commonArgs, cleanCommonArgs
+		local funcs, fParams, fCleanups = {}, {}, {} 
+		
+		commonArgs = cleanNils(pop())
+		if cur() == 'table' then						
+			local cct = pop()				--common-cleaner-table
+			local cleaner = pop(cct)		--common-cleaner
+			if #cct == 0 then					
+				for k, v in ipairs(commonArgs) do
+					cleanCommonArgs[k] = cleaner(v)
+				end
+			else 
+				cleanCommonArgs = commonArgs
+				for _, i in ipairs(cct) do
+					cleanCommonArgs[i] = cleaner(commonArgs[i])
+				end
+			end
+		else cleanCommonArgs = commonArgs end 
+		
+		for i = 1, #args / 2 do
+			add(funcs, pop())
+			add(fParams, pop())
+			if cur() == 'table' then add(fCleanups, pop())
+			else add(fCleanups, -1) end
+		end
+		return cleanCommonArgs, funcs, fParams, fCleanups
+	end
+	
+	---Check Eligibility
+	local function checkLuaVal(p, arg)
+		local t = type
+		if p == 's' then p = 'string'
+		elseif p == 'n' then p = 'number'
+		elseif p == 'f' then p = 'function'
+		elseif p == 't' then p = 'table'
+		elseif p == 'ni' then p = 'nil'
+		elseif p == 'th' then p = 'thread'
+		elseif p == 'u' then p = 'userdata' end
+		
+		if p == t(arg) then return true
+		else return false end	
+	end
+	
+	local function checkObject(p, arg)
+		p = p.class or p
+		return type(arg) == 'table' and arg.instanceof and arg:instanceof(p)
+	end
+	
+	local function checkParam(p, arg)
+		if p == UNDEF then return false
+		elseif type(p) == 'string' then return checkLuaVal(p, arg)
+		elseif type(p) == 'table' then return checkObject(p, arg)  end
+	end
+	
+	local function checkNoFlag(cleanArgs, func, fParams)
+		local found, lastFoundIndex  = {}, 0
+		local missing = #fParams
+		for i, param in ipairs(fParams) do			
+			for k, arg in ipairs(cleanArgs) do
+				if missing > 0 and k >= i and checkParam(param, arg) then
+					table.insert(found, arg)
+					missing = missing - 1
+					lastFoundIndex = k
+					break
+				end
+			end
+--		print('?')
+		end
+		
+		if lastFoundIndex > 0 then
+			for i = lastFoundIndex + 1, #cleanArgs do
+				table.insert(found, cleanArgs[i])
+			end
+		end
+		if missing == 0 then return func, found
+		else return nil end
+	end
+	
+	local function checkMinimal(cleanArgs, func, fParams)
+--		TODO: Implement -m flag.
+		error "TODO: Implement -m flag in misc.overload."
+	end
+	
+	local function checkStrict(cleanArgs, func, fParams)
+--		TODO: Implement -s flag.	
+		error "TODO: Implement -s flag in misc.overload."
+	end
+	
+	---Overload	
+	function misc.ovld(...)
+		local cleanArgs, funcs, fParams, fCleanups = cleanupAllArgs(...)
+		local cur, pop, add = createHelpers(cleanArgs)
+		
+		if DEBUG.OVERLOAD then
+			utils.t.print("cleanArgs", cleanArgs)
+			utils.t.print("funcs", funcs)
+			utils.t.print("fParams", fParams)
+			utils.t.print("fCleanups", fCleanups)
+			utils.t.print("{...}", {...})
+		end
+		
+		for k, func in ipairs(funcs) do
+			local flag = getFlag(fParams[k])
+			local check, fArgs, cleanFuncArgs;
+			if not flag then check = checkNoFlag 
+			elseif flag == '-m' then check = checkMinimal
+			elseif flag == '-s' then check = checkStrict end
+			check, fArgs = check(cleanArgs, func, fParams[k])
+			if check then
+				local cleanFuncArgs = cleanupFuncArgs(fCleanups[k], fArgs)
+				return check(unpack(cleanFuncArgs))
+			end
+		end
+	end
+end
 return misc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

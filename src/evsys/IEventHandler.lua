@@ -8,10 +8,10 @@ function IEventHandler:__included(class)
 	Evsys:lockOn(class)
 end
 
-Mixins.onPostInit(IEventHandler, function(self)
+function IEventHandler:__postInit()
 	if DEBUG.EVENT_SUBS then print(string.format("%s\t Subscribed to the evsys.", self)) end
 	Evsys:subscribe(self)
-end)
+end
 
 ---Methods
 function IEventHandler:attach(e, f)

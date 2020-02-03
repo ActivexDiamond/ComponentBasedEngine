@@ -49,25 +49,32 @@ end
 
 --- @param #table mixin the to add the methods to.
 --  @param #function ... Any number of functions to call after the class is initialized. Each getting passed the newly created instance as their "self" paramter.
-function Mixins.onPostInit(mixin, ...)
-	print("onPostInit")
-	local functions = {...}
-	local included = function(self, class)
-		local new = class.__new
-		function class:__new(...)
-			local instance = new(self, ...)
-			callAll(instance, functions)
-			return instance
-		end
-	end	
-	print("mixin.__included", mixin.__included)
-	mixin.__included = mixin.__included and
-		joinInclusions(mixin.__included, included) or included
-end
+--function Mixins.onPostInit(mixin, ...)
+--	local functions = {...}
+--	local included = function(self, class)
+--		local new = class.__new
+--		function class:__new(...)
+--			print("onPostInit:" .. mixin.__name__)
+----			local instance = new(self, ...)
+--			local instance = class:__allocate()
+--			instance:init(...)
+--			callAll(instance, functions)
+--			return instance
+--		end
+--	end	
+--	print("mixin.__included", mixin.__included)
+--	mixin.__included = mixin.__included and
+--		joinInclusions(mixin.__included, included) or included
+--end
 
-function Mixins:__call(str)
---	return { static = {__mixinName__ = str} }
-	return {__name__ = str}
+function Mixins:__call(str, super)
+--	local t = {__name__ = str}
+-- 	t.super = super
+-- 	t.__index = function(t, k) return t.super and t.super[k] end
+--	return setmetatable(t, t)
+	return setmetatable({__name__ = str, super = super},
+			super and {__index = function(t, k) return t.super[k] end} or {}
+	)
 end
 
 setmetatable(Mixins, Mixins)

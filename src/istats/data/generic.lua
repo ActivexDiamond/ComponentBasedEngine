@@ -1,17 +1,38 @@
 ------------------------------ Blocks ------------------------------
 data{"logOak", 
 	name = "Oak Log",
-	desc = "Log(0)"
-}
-
-data{"plankOak", 
-	name = "Oak Plank",
-	desc = "Depressed Logs."
+	desc = "Log(0)",
+	sprInv = "spinv_tree_log.png",
 }
 
 data{"stickWood", 
 	name = "Wooden Stick",
-	desc = "*pokes it with a stick*"
+	desc = "*pokes it with a stick*",
+	sprInv = "spinv_tree_stick.png",
+}
+
+data{"coalOredrop", 
+	name = "Coal Ore Drop",
+	desc = "Lump(s) of coal.",
+	sprInv = "spinv_coal_oredrop.png",
+}
+
+data{"ironIngot", 
+	name = "Iron Ingot",
+	desc = "The most common form of the most common metal.",
+	sprInv = "spinv_iron_ingot.png",
+}
+
+data{"ironPlate", 
+	name = "Iron Plate",
+	desc = "Less common than an ingot, also less geometrical.",
+	sprInv = "spinv_iron_plate.png",
+}
+
+data{"ironStick", 
+	name = "Iron Stick",
+	desc = "\"The\" better stick.",
+	sprInv = "spinv_iron_stick.png",
 }
 
 ------------------------------ Mobs ------------------------------

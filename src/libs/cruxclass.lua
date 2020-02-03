@@ -186,9 +186,6 @@ end
 local function _includeMixin(aClass, mixin)
   assert(type(mixin) == 'table', "mixin must be a table")
 
-  -- If including the DefaultMixin, then class.__mixins__
-  -- will at that point still be nil.
-  -- DefaultMixin is not __included in class.__mixins__
   if aClass.__mixins__ then table.insert(aClass.__mixins__, mixin) end	--------------
     
   for name,method in pairs(mixin) do
@@ -233,6 +230,9 @@ local DefaultMixin = {
       assert(type(self) == 'table', "Make sure that you are using 'Class:__new' instead of 'Class.__new'")
       local instance = self:__allocate()
       instance:init(...)
+      for k, v in ipairs(instance.class.__mixins__) do
+      	if v.__postInit then v.__postInit(instance, ...) end
+      end
       return instance
     end,
 

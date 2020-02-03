@@ -1,4 +1,6 @@
+--require "suitTest"
 --require "box2dMeterTest"
+
 ---[[
 require "DEBUG"
 require "globals"
@@ -13,6 +15,11 @@ local Zombie = require "template.Zombie"
 local Evsys = require "evsys.Evsys"
 local KeypressEvent = require "evsys.input.KeypressEvent"
 
+local Item = require "template.Item"
+local ItemStack = require "inv.ItemStack"
+local Slot = require "inv.Slot"
+local Inventory = require "inv.Inventory"
+
 local Scheduler = require "utils.Scheduler"
 local Game = require "core.Game"
 
@@ -22,8 +29,7 @@ local zombie, zombie1, zombie2
 
 function love.load()
 
-	local grid = {0, 0,
-		2, 2,
+	local grid = {
 		18, 13,
 		9, 9,
 		8, 8,
@@ -111,7 +117,7 @@ function love.load()
 --		end
 --	end
 --	Scheduler:callEveryFor(interval, total, getClosure0())
-
+--
 --	Scheduler:callEveryFor(interval, total, getClosure0(), nil, function()
 --		print('-----------------')
 --		Scheduler:callEveryFor(interval, total, getClosure1()) 
@@ -124,7 +130,7 @@ function love.load()
 --	end
 --	
 --	Scheduler:callEveryFor(interval, total, f3)
-	
+--	
 --	DEBUG / TEST CODE
 --print ((15 / 30) % 1)
 --	print (4.3 % 2)
@@ -175,61 +181,92 @@ function love.load()
 
 end
 
-local b = utils.toBin
-print(b(0))
-print(b(1))
-print(b(2))
-print(b(3))
-print(b(4))
+--local function cleanupArgs(from) 
+--
+--end
+--
+--local function combineItem(item, ...)
+--	print("combineItem", item, ...)
+--end
+--
+--local function combineNumber(n, ...) 
+--	print("combineNumber", n, ...)
+--end
+--
+--local function combineTable(t, ...) 
+--	print("combineTable", t, ...)
+--end
+--
+--local function combineString(str, ...) 
+--	print("combineString", str, ...)
+--end
+--
+--local function combineTableString(t, str, ...) 
+--	print("combineTableString", t, str, ...)
+--end
+--
+--local function combine(...)
+--	return utils.ovld({...},		--args
+--			{cleanupArgs},			--optional cleanup function[1]
+--			combineItem, {Item},
+--			combineTableString, {'t', 's'},
+--			combineTable, {'t'},
+--			combineString, {'s'},
+--			combineNumber, {'n'}
+--		)
+--
+--
+--end
+--combine(1,  2,  3)
+--combine({x = 3},  2, 3)
+--combine(-1, "str", "str2", 2, 3, "str3")
+--combine({x = 30},  "strT", 20, 30)
+--
+--local log = Item("logOak")
+--combine(1, log, 3)
 
-print()
+local log = Item("logOak")
+local stack = ItemStack(log)
+local slot = Slot(nil, nil, stack)
 
-print(b(15))
-print(b(16))
+local slots = {}
+for i = 1, 8 do
+	table.insert(slots, slot)
+end
 
-print()
-
-print(b(31))
-print(b(32))
-	
-print( " ------------- ")
-print(b(0, 16, 4))
-print(b(1, 16, 4))
-print(b(2, 16, 4))
-print(b(3, 16, 4))
-print(b(4, 16, 4))
-
-print(b(5, 16, 4))
-print(b(6, 16, 4))
-print(b(7, 16, 4))
-print(b(8, 16, 4))
-print(b(9, 16, 4))
-
-print()
-
-print(b(15))
-print(b(16))
-
-print()
-
-print(b(31))
-print(b(32))
+slots = {
+	Slot(nil, nil, ItemStack(Item("logOak"))),
+	Slot(nil, nil, ItemStack(Item("stickWood"))),
+	Slot(nil, nil, ItemStack(Item("coalOredrop"))),
+	Slot(nil, nil, ItemStack(Item("ironIngot"))),
+	Slot(nil, nil, ItemStack(Item("ironPlate"))),
+	Slot(nil, nil, ItemStack(Item("ironStick"))),
 
 
+}
+
+local inv = Inventory(slots)
+
+print('item',  stack:getItem(), 'amount', stack:getAmount(), 'parent', stack:getParent())
+print('itemStack', slot:getItemStack(), 'capacity', slot:getCapacity(), 'parent', slot:getParent())
+--print(slot.child.child:getMaxStack())
 local dir = 0;
 function love.update(dt)
 	Game:tick(dt)
-	
+
 	player:tick(dt)
 	zombie:tick(dt)
 --	zombie1:tick(dt)
 --	zombie2:tick(dt)
+	inv:tickGui()
 	Scheduler:tick(dt)
 	Evsys:poll()
 end
 
 local clicks = 0
 function love.draw()
+	inv:drawGui()
+	
 	local g = love.graphics;
 	g.scale(Game.MS)
 	

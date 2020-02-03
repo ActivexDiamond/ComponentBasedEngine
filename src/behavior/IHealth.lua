@@ -7,11 +7,11 @@ local Mixins = require "libs.Mixins"
 
 ------------------------------ Setup ------------------------------
 local IHealth = Mixins("IHealth")
-Mixins.onPostInit(IHealth, function(self)
+function IHealth:__postInit()
 	self.maxHealth = self:getBaseMaxHealth()
 	---If health was set by the instance, just bound it. 
 	self.health = self.health and self:setHealth(self.health) or self.maxHealth
-end)
+end
 
 function IHealth:setupHealth() 
 	self.maxHealth = self:getBaseMaxHealth()

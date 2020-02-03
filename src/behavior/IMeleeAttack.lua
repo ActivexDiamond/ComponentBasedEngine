@@ -39,9 +39,9 @@ end
 
 ------------------------------ Setup ------------------------------
 local IMeleeAttack = Mixins("IMeleeAttack")
-Mixins.onPostInit(IMeleeAttack, function(self)
+function IMeleeAttack:__postInit()
 	assert(self:instanceof(IBoundingBox), "IMeleeAttack can only be applied on instances of IBoundingBox")
-end)
+end
 
 ------------------------------ Coordinate Aligners ------------------------------
 local function alignOrigin(ox, oy, ow, oh, x, y, w, h)

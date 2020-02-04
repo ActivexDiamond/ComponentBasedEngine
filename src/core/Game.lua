@@ -21,6 +21,17 @@ Game.MS = Game.GRID
 Game.GRAVITY_X = 0
 Game.GRAVITY_Y = 25
 
+Game.graphics = {}
+do
+	local g = Game.graphics
+	g.ITEM_W, g.ITEM_H = 32, 32
+
+	g.CELL_PAD_X, g.CELL_PAD_Y = 4, 4	--space between slot-borders and item inside of it.
+	g.CELL_W = g.ITEM_W + g.CELL_PAD_X
+	g.CELL_H = g.ITEM_H + g.CELL_PAD_Y
+	
+	g.INV_PAD = 4						--space between slots
+end
 ---Core
 function Game:tick(dt)
 	self.world:update(dt)

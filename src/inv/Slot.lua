@@ -18,14 +18,20 @@ function Slot:init(inFilter, outFilter, itemStack, parent)
 end
 
 ------------------------------ GUI Methods ------------------------------
-function Slot:tickGui(gui, place)
+function Slot:tickGui(gui, index, place)
 	--draw slot
-
+	--local hit = gui:Button("", {id = index}, place()).hit
+	--if self.parent and hit then 
+	--	self.parent:_onChildUpdate(self, 'hit', index, hit) 
+	--end
+	
 	--draw item
+	local x, y = place()
+	x, y = x + self.gui.padX, y + self.gui.padY
 	if self.child then
-		local spr = self.child:getItem():getSprInv()
-		local n = self.child:getAmount()
-		gui:ImageButton(spr, place())
+		self.child:getItem():draw(love.graphics, x, y)
+		--local n = self.child:getAmount()
+		--gui:ImageButton(spr, place())
 	end
 end
 

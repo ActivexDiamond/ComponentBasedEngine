@@ -21,18 +21,23 @@ end
 
 ------------------------------ GUI Methods ------------------------------
 function Inventory:tickGui()
-	self:tickElements(400, 200, 48, 48, 2, 3, 8, 8, self.children)
+	--self:tickElements(400, 200, 48, 48, 2, 3, 8, 8, self.children)
+	self:tickElements(self.children, {x = 400, y = 200, 
+			cols = 2, rows = 3, cellW = 48, padX = 8})
 end
 
 ------------------------------ Access Methods ------------------------------
 
 
 ------------------------------ Callbacks ------------------------------
---function Inventory:_onChildUpdate()
---	if self.child and self.child:getAmount() == 0 then
---		self:_setChild(nil)
---	end
---end
+function Inventory:_onChildUpdate(child, msg, index, hit)
+	if self.child and self.child:getAmount() == 0 then
+		self:_setChild(nil)
+	end
+	if msg and msg == 'hit' then
+		print("got hit by: " .. index .. " with: " .. hit) 
+	end
+end
 
 ------------------------------ Direct Access Methods ------------------------------
 

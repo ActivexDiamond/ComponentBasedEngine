@@ -27,11 +27,11 @@ function IMultiContainer:_onUpdate()
 	end
 end
 
-function IMultiContainer:_onChildUpdate(child) 
+function IMultiContainer:_onChildUpdate(child, ...) 
 
 end
 
-function IMultiContainer:_onParentUpdate() 
+function IMultiContainer:_onParentUpdate(...) 
 
 end
 

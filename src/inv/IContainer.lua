@@ -20,16 +20,16 @@ function IContainer:sub(...)
 end
 
 ------------------------------ Callbacks ------------------------------
-function IContainer:_onUpdate() 
+function IContainer:_onUpdate(...) 
 	if self.parent then self.parent:_onChildUpdate(self) end
 	if self.child then self.child:_onParentUpdate() end
 end
 
-function IContainer:_onChildUpdate(child) 
+function IContainer:_onChildUpdate(child, ...) 
 
 end
 
-function IContainer:_onParentUpdate() 
+function IContainer:_onParentUpdate(...) 
 
 end
 

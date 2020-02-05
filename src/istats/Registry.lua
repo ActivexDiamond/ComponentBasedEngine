@@ -152,15 +152,16 @@ end
 ------------------------------ Hierarchy Methods ------------------------------
 local function fetchDirectHierarchy(class)
 	local h = {class.__name__}
-	if DEBUG.REG_APPLY then print("class.__name__", class.__name__) end
+	if DEBUG.REG_APPLY then print("\tclass.__name__", class.__name__) end
 	for k, v in ipairs(class.__mixins__) do
-		if DEBUG.REG_APPLY then print("\tmixins.__name__", v.__name__) end
+		if DEBUG.REG_APPLY then print("\t\tmixins.__name__", v.__name__) end
 		table.insert(h, v.__name__)
 	end
 	return h
 end
 
 local function fetchHierarchy(inst)
+	if DEBUG.REG_APPLY then print("inst.class.__name__", inst.class.__name__) end
 	local class = inst.class
 	local h = fetchDirectHierarchy(class)
 	repeat

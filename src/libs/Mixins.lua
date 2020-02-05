@@ -3,7 +3,7 @@ local Mixins = {
   
   _MADE_FOR_VERSIONS = [[
   	- middleclass  v4.1.1 
-  	- MixinEdit    v1.0.0 
+  	- MixinEdit    v2.1.0 
   	- NamingRevamp v1.0.0
   ]],
   
@@ -14,24 +14,12 @@ local Mixins = {
   ]],
   
   _LICENSE = [[
-    MIT LICENSE
-    Copyright (c) 2011 Enrique García Cota
-    Permission is hereby granted, free of charge, to any person obtaining a
-    copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-    The above copyright notice and this permission notice shall be included
-    in all copies or substantial portions of the Software.
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-    OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+    tl;dr: You can do whatever you want with this. Edit it, use it as is,
+    make money, make content; knock yourself out. 
+  ]],
+  
+  _AUTHOR = [[
+  	Dulfiqar 'Active Diamond' Al-Safi
   ]],
 }
 local print = function() end
@@ -67,13 +55,13 @@ end
 --		joinInclusions(mixin.__included, included) or included
 --end
 
-function Mixins:__call(str, super)
+function Mixins:__call(str, isuper)
 --	local t = {__name__ = str}
--- 	t.super = super
--- 	t.__index = function(t, k) return t.super and t.super[k] end
+-- 	t.isuper = isuper
+-- 	t.__index = function(t, k) return t.isuper and t.isuper[k] end
 --	return setmetatable(t, t)
-	return setmetatable({__name__ = str, super = super},
-			super and {__index = function(t, k) return t.super[k] end} or {}
+	return setmetatable({__name__ = str, isuper = isuper},
+			isuper and {__index = function(t, k) return t.isuper[k] end} or {}
 	)
 end
 

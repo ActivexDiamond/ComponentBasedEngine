@@ -15,8 +15,6 @@ local Game = require "core.Game"
 
 ------------------------------ Constructor ------------------------------
 --local Inventory = class("Inventory"):include(IMultiContainer, IGuiElement)
-local Test = class("Test")
-
 local Inventory = class("Inventory"):include(IGuiElement, IMultiContainer)
 --local Inventory = class("Inventory"):include(IMultiContainer, IGuiElement)
 --function Inventory:init(rows, cols, slots, inFilters, outFilters, ovr, parent)

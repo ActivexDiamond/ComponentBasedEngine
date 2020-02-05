@@ -1,15 +1,17 @@
 local Mixins = require "libs.Mixins"
+local IGuiElement = require "gui.IGuiElement"
 
 ------------------------------ Setup ------------------------------
-local IGuiIcon = Mixins("IGuiIcon")--, IDrawable)
---function IItemDrawable:__postInit()
---	
---end
+local IGuiIcon = Mixins("IGuiIcon", IGuiElement)--, IDrawable)
+function IGuiIcon:__postInit()
+	self.gui = false
+	print("postInit IGuiIcon")
+end
 
 ------------------------------ API ------------------------------
-function IGuiIcon:draw(gui, x, y)
+function IGuiIcon:tickGui(gui, pos, index)
 	local spr, sx, sy = self:getSprInv()
-	gui:Image(spr, x, y)
+	gui:Image(spr, pos.x, pos.y)
 end
 ------------------------------ Callbacks ------------------------------
 

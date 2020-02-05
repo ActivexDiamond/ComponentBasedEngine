@@ -9,7 +9,7 @@ function Thing:init(id)
 end
 
 ------------------------------ Abstract Methods ------------------------------
-function Thing:draw(g) error "Abstract method Thing:draw(g) must be implemented in child!"  end
+--function Thing:draw(g) error "Abstract method Thing:draw(g) must be implemented in child!"  end
 
 ------------------------------ Getters ------------------------------
 function Thing:getId() return self.id end

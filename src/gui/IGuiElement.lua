@@ -4,7 +4,7 @@ local suit  = require "libs.suit"
 ------------------------------ Setup ------------------------------
 local IGuiElement = Mixins("IGuiElement")
 function IGuiElement:__postInit()
-	if not self.gui then
+	if self.gui == nil then
 		self.gui = suit.new()
 		self.gui.elements ={}
 		--screen-coords
@@ -13,6 +13,7 @@ function IGuiElement:__postInit()
 		self.gui.y = self.gui.y or sh/2
 		self.gui.padX, self.gui.padY = 0, 0
 	end
+	print("postInit IGuiElement")
 end
 
 ------------------------------ API ------------------------------
@@ -55,8 +56,8 @@ function IGuiElement:tickElements(elements, overrides)
 		for x = 1, cols do
 			local i = x + ((y - 1) * cols)
 			if i > #elements then return end
-			local place = self:_createPlace(gui.layout:col())
-			elements[i]:tickGui(gui, i, place)
+			local pos = self:_createPos(gui.layout:col())
+			elements[i]:tickGui(gui, pos, i)
 		end
 		gui.layout:pop()
 		gui.layout:row()
@@ -75,7 +76,7 @@ function IGuiElement:_getJoinedVal(ovrA, guiA, defaultA, ovrB, guiB, defaultB)
 	return a, b
 end
 
-function IGuiElement:_createPlace(x, y, w, h)
+function IGuiElement:_createPos(x, y, w, h)
 	return setmetatable({x = x, y = y, w = w, h = h},
 			{__call = function() return x, y, w, h end})
 end

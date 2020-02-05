@@ -20,22 +20,22 @@ function Slot:init(t)
 end
 
 ------------------------------ GUI Methods ------------------------------
-function Slot:tickGui(gui, index, place)
+function Slot:tickGui(gui, pos, index)
 	--draw item
-	local x, y = place.x + self.gui.padX, place.y + self.gui.padY
+	local x, y = pos.x + self.gui.padX, pos.y + self.gui.padY
 	if self.child then
 		local n = self.child:getAmount()
 		if n > 1 then
 			local txtH = love.graphics.getFont():getHeight()
-			gui:Label(n, x, y + place.h - txtH)
+			gui:Label(n, x, y + pos.h - txtH)
 		end
-		self.child:getItem():draw(gui, x, y)
+		self.child:getItem():tickGui(gui, pos)
 	end
 	
 	--draw slot		
 	--TODO: Seperate bg and hit check. 
 	if not self.noBg and not self.noHit then
-		local hit = gui:Button("", {id = index}, place()).hit
+		local hit = gui:Button("", {id = index}, pos()).hit
 		if self.parent and hit then 
 			self.parent:_onChildUpdate(self, 'hit', index, hit) 
 		end

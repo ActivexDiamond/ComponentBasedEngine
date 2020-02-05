@@ -1,9 +1,9 @@
 local Mixins = {
-  _VERSION = "Mixins v1.0.0",
+  _VERSION = "Mixins v2.1.0",
   
   _MADE_FOR_VERSIONS = [[
   	- middleclass  v4.1.1 
-  	- MixinEdit    v2.1.0 
+  	- MixinEdit    v1.2.0 
   	- NamingRevamp v1.0.0
   ]],
   

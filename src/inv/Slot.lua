@@ -10,28 +10,35 @@ local IGuiElement = require "gui.IGuiElement"
 
 ------------------------------ Constructor ------------------------------
 local Slot = class("Slot"):include(IContainer, IGuiElement)
-function Slot:init(inFilter, outFilter, itemStack, parent)
-	self.inFilter = inFilter or Filter()
-	self.outFilter = outFilter or Filter()
-	self:_setChild(itemStack)
-	self:_setParent(parent)			--Inv, or nil.
+function Slot:init(t)
+	t = t or {}
+	self.inFilter = t.inFilter or Filter()
+	self.outFilter = t.outFilter or Filter()
+	self.noBg, self.noHit = t.noBg, t.noHit 
+	self:_setChild(t.itemStack)
+	self:_setParent(t.parent)			--Inv, or nil.
 end
 
 ------------------------------ GUI Methods ------------------------------
 function Slot:tickGui(gui, index, place)
-	--draw slot
-	--local hit = gui:Button("", {id = index}, place()).hit
-	--if self.parent and hit then 
-	--	self.parent:_onChildUpdate(self, 'hit', index, hit) 
-	--end
-	
 	--draw item
-	local x, y = place()
-	x, y = x + self.gui.padX, y + self.gui.padY
+	local x, y = place.x + self.gui.padX, place.y + self.gui.padY
 	if self.child then
-		self.child:getItem():draw(love.graphics, x, y)
-		--local n = self.child:getAmount()
-		--gui:ImageButton(spr, place())
+		local n = self.child:getAmount()
+		if n > 1 then
+			local txtH = love.graphics.getFont():getHeight()
+			gui:Label(n, x, y + place.h - txtH)
+		end
+		self.child:getItem():draw(gui, x, y)
+	end
+	
+	--draw slot		
+	--TODO: Seperate bg and hit check. 
+	if not self.noBg and not self.noHit then
+		local hit = gui:Button("", {id = index}, place()).hit
+		if self.parent and hit then 
+			self.parent:_onChildUpdate(self, 'hit', index, hit) 
+		end
 	end
 end
 

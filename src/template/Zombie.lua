@@ -29,7 +29,7 @@ end
 ------------------------------ Constructor ------------------------------ 
 local Zombie = class("Zombie", Mob):include(IHealth, IHittable)
 function Zombie:init(x, y)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
-	Mob.init(self, "mobZombie", x, y)
+	Mob.init(self, "zombie_mob", x, y)
 	self.path = Mob.LEFT
 end
 

@@ -1,12 +1,10 @@
--- This file is part of SUIT, copyright (c) 2016 Matthias Richter
-
 local BASE = (...):match('(.-)[^%.]+$')
 
 local function isType(val, typ)
 	return type(val) == "userdata" and val.typeOf and val:typeOf(typ)
 end
 
-return function(core, normal, ...)
+local function ImageButton(core, normal, ...)
 	local opt, x, y, sx, sy = core.getOptionsAndSize(...)	-------------------
 	sx, sy = sx or 1, sy or 1
 	opt.normal = normal or opt.normal or opt[1]
@@ -26,8 +24,8 @@ return function(core, normal, ...)
 		if opt.mask then
 			-- alpha test
 			assert(isType(opt.mask, "ImageData"), "Option `mask` is not a love.image.ImageData")
-			assert(u < mask:getWidth() and v < mask:getHeight(), "Mask may not be smaller than image.")
-			local _,_,_,a = mask:getPixel(u,v)
+			assert(u < opt.mask:getWidth() and v < opt.mask:getHeight(), "Mask may not be smaller than image.")
+			local _,_,_,a = opt.mask:getPixel(u,v)
 			return a > 0
 		end
 
@@ -55,3 +53,10 @@ return function(core, normal, ...)
 		left = not core:isHovered(opt.id) and core:wasHovered(opt.id)
 	}
 end
+
+local mask = love.image.newImageData(256, 256)  --TODO: base on max allowed rese
+
+return function(core, normal, x, y, sx, sy)
+	sx, sy = sx or 1, sy or 1
+	return ImageButton(core, normal, {mask = mask}, x, y, sx, sy)	
+end 

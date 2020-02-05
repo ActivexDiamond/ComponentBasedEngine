@@ -26,26 +26,29 @@ function IGuiElement:drawGui(g)						-- 'g' to match IDrawable's interface.
 end
 ------------------------------ Internals ------------------------------
 function IGuiElement:tickElements(elements, overrides)
---function IGuiElement:tickElements(x, y, cellW, cellH, cols, rows, padX, padY, elements, gui)
 	local ovr = overrides or {}
-	local gui, x, y, rows, cols, cellW, cellH, padX, padY;
-	
+	local gui, gx, gy, rows, cols, cellW, cellH, padX, padY;
 	--vars take their values, in order, from:
-	--ovr.var, ovr.gui.var, self.gui.var, DEFAULT
+	--ovr.var, gui.var, DEFAULT
+	--gui comes from ovr.gui or self.gui
+	--(if ovr.gui but not ovr.gui.var ; var still goes to default)
 	local gui = ovr.gui or self.gui
 	elements = elements or gui.elements or {}
-	x = ovr.x or gui.x or 0
-	y = ovr.y or gui.y or 0
-	rows = ovr.rows or gui.rows or 1
-	cols = ovr.cols or ovr.rows or gui.cols or gui.rows or #elements
-	cellW = ovr.cellW or gui.cellW or 1
-	cellH = ovr.cellH or ovr.cellW or gui.cellH or gui.cellW or 1
-	padX = ovr.padX or gui.padX or 0
-	padY = ovr.padY or ovr.padX or gui.padY or gui.padX or 0
-	--TODO move fallback-methodology into a helper-method.
+
+	gx,		gy		= self:_getVal(			ovr.x,		gui.x,		0,		ovr.y,		gui.y,		0)
+	rows,	cols	= self:_getJoinedVal(	ovr.rows,	gui.rows,	1,		ovr.cols,	gui.cols,	#elements)
+	cellW,	cellH	= self:_getJoinedVal(	ovr.cellW,	gui.cellW,	1, 		ovr.cellH,	gui.cellH,	1)
+	padX,	padY	= self:_getJoinedVal(	ovr.padX,	gui.padX,	0, 		ovr.padY,	gui.padY,	0)
+
+--	gx,		gy		= self:_getVal(			ovr.x,		ovr.y,			gui.x,		gui.y,			0,		0)
+--	rows,	cols	= self:_getJoinedVal(	ovr.rows,	ovr.cols,		gui.rows,	gui.cols,		1,		#elements)
+--	cellW,	cellH	= self:_getJoinedVal(	ovr.cellW,	ovr.cellH,		gui.cellW, 	gui.cellH,		1,		1)
+--	padX,	padY	= self:_getJoinedVal(	ovr.padX,	ovr.padY,		gui.padX, 	gui.padY,		0,		0)
+
 	
-	gui.layout:reset(x, y, padX, padY)
+	gui.layout:reset(gx, gy, padX, padY)
 	gui.layout:setSize(cellW, cellH)
+	gui.layout:left(cellW, cellH)
 
 	for y = 1, rows do
 		gui.layout:push()	
@@ -60,8 +63,21 @@ function IGuiElement:tickElements(elements, overrides)
 	end
 end
 
+function IGuiElement:_getVal(ovrA, guiA, defaultA, ovrB, guiB, defaultB)
+	local a = ovrA or guiA or defaultA
+	local b = ovrB or guiB or defaultB
+	return a, b
+end
+
+function IGuiElement:_getJoinedVal(ovrA, guiA, defaultA, ovrB, guiB, defaultB)
+	local a = ovrA or guiA or defaultA
+	local b = ovrB or ovrA or guiB or guiA or defaultB
+	return a, b
+end
+
 function IGuiElement:_createPlace(x, y, w, h)
-	return function() return x, y, w, h end
+	return setmetatable({x = x, y = y, w = w, h = h},
+			{__call = function() return x, y, w, h end})
 end
 
 ------------------------------ Getters/Setters ------------------------------
@@ -86,3 +102,4 @@ function IGuiElement:setPadding(x, y)
 end
 
 return IGuiElement
+ 

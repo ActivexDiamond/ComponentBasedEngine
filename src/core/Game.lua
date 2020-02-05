@@ -24,7 +24,8 @@ Game.GRAVITY_Y = 25
 Game.graphics = {}
 do
 	local g = Game.graphics
-	g.ITEM_W, g.ITEM_H = 32, 32
+	g.GUI_SCALE = 0.75
+	g.ITEM_W, g.ITEM_H = 48, 48
 
 	g.CELL_PAD_X, g.CELL_PAD_Y = 4, 4	--space between slot-borders and item inside of it.
 	g.CELL_W = g.ITEM_W + g.CELL_PAD_X

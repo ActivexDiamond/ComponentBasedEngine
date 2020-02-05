@@ -1,42 +1,42 @@
 ------------------------------ Blocks ------------------------------
-data{"logOak", 
+data{"oak|log", 
 	name = "Oak Log",
 	desc = "Log(0)",
 	sprInv = "spinv_tree_log.png",
 }
 
-data{"stickWood", 
+data{"wood|stick", 
 	name = "Wooden Stick",
 	desc = "*pokes it with a stick*",
 	sprInv = "spinv_tree_stick.png",
 }
 
-data{"coalOredrop", 
+data{"coal|oredrop", 
 	name = "Coal Ore Drop",
 	desc = "Lump(s) of coal.",
 	sprInv = "spinv_coal_oredrop.png",
 }
 
-data{"ironIngot", 
+data{"iron|ingot", 
 	name = "Iron Ingot",
 	desc = "The most common form of the most common metal.",
 	sprInv = "spinv_iron_ingot.png",
 }
 
-data{"ironPlate", 
+data{"iron|plate", 
 	name = "Iron Plate",
 	desc = "Less common than an ingot, also less geometrical.",
 	sprInv = "spinv_iron_plate.png",
 }
 
-data{"ironStick", 
+data{"iron|stick", 
 	name = "Iron Stick",
 	desc = "\"The\" better stick.",
 	sprInv = "spinv_iron_stick.png",
 }
 
 ------------------------------ Mobs ------------------------------
-data{"mobZombie",
+data{"zombie_mob",
 	name = "Undead",
 	desc = "Zombie",
 	
@@ -66,19 +66,19 @@ data{"player",
 }
 
 ------------------------------ Weapons ------------------------------
-data{"swordStone",
+data{"stone|sword",
 	maxDurability = 50,
 	cooldown = 2,
 	damage = 5,
 }
 
-data{"swordIron",
+data{"iron|sword",
 	maxDurability = 250,
 	cooldown = 2,
 	damage = 15,
 }
 
-data{"spearStone",
+data{"stone|spear",
 	maxDurability = 50,
 	cooldown = 2,
 	damage = 5,

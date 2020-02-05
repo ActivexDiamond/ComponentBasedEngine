@@ -65,7 +65,7 @@ function love.load()
 		
 	for i = 1, #grid, 2 do
 		table.insert(blocks, 
-			Block("andesiteStoneblock", grid[i], grid[i + 1])) 
+			Block("andesite|block", grid[i], grid[i + 1])) 
 	end	
 	
 	player = Player(12, 12)
@@ -225,7 +225,7 @@ end
 --local log = Item("logOak")
 --combine(1, log, 3)
 
-local log = Item("logOak")
+local log = Item("oak|log")
 local stack = ItemStack(log)
 local slot = Slot(nil, nil, stack)
 
@@ -235,23 +235,29 @@ for i = 1, 8 do
 end
 
 slots = {
-	Slot(nil, nil, ItemStack(Item("logOak"))),
-	Slot(nil, nil, ItemStack(Item("stickWood"))),
-	Slot(nil, nil, ItemStack(Item("coalOredrop"))),
-	Slot(nil, nil, ItemStack(Item("ironIngot"))),
-	Slot(nil, nil, ItemStack(Item("ironPlate"))),
-	Slot(nil, nil, ItemStack(Item("ironStick"))),
-
-
+	Slot{itemStack = ItemStack(Item("oak|log"), 4)},
+	Slot{itemStack = ItemStack(Item("wood|stick"), 2)},
+	Slot{itemStack = ItemStack(Item("coal|oredrop"), 64)},
+	Slot{itemStack = ItemStack(Item("iron|ingot"))},
+	Slot{itemStack = ItemStack(Item("iron|plate"))},
+	Slot{itemStack = ItemStack(Item("iron|stick"))},
 }
 
-local inv = Inventory(slots)
+local inv = Inventory{x = 200, y = 200,
+		cols = 10, rows = 4, 
+		slots = slots}
+
+local mouseInv = Inventory{slots = Slot{noBg = true, noHit = true}}
 
 print('item',  stack:getItem(), 'amount', stack:getAmount(), 'parent', stack:getParent())
 print('itemStack', slot:getItemStack(), 'capacity', slot:getCapacity(), 'parent', slot:getParent())
 --print(slot.child.child:getMaxStack())
 local dir = 0;
 function love.update(dt)
+	local s = Game.graphics.GUI_SCALE
+	mouseInv:setPos(love.mouse.getX()/s, love.mouse.getY()/s)
+--	mouseInv:setPos(love.mouse.getX(), love.mouse.getY())
+
 	Game:tick(dt)
 
 	player:tick(dt)
@@ -259,14 +265,13 @@ function love.update(dt)
 --	zombie1:tick(dt)
 --	zombie2:tick(dt)
 	inv:tickGui()
+	mouseInv:tickGui()
 	Scheduler:tick(dt)
 	Evsys:poll()
 end
 
 local clicks = 0
 function love.draw()
-	inv:drawGui()
-	
 	local g = love.graphics;
 	g.scale(Game.MS)
 	
@@ -307,6 +312,12 @@ function love.draw()
 	str = string.format("grid: %d, %d", Game:scaledSnap(mousex) / Game.GRID, 
 		Game:scaledSnap(mousey) / Game.GRID)
 	g.print(str, 40, 180)
+	
+	g.scale(Game.graphics.GUI_SCALE)
+	inv:drawGui()
+	mouseInv:drawGui()
+	g.scale(1/Game.graphics.GUI_SCALE)
+	
 end
 
 

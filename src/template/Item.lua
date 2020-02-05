@@ -2,11 +2,11 @@ local class = require "libs.cruxclass"
 local Thing = require "template.Thing"
 
 local IContainable = require "inv.IContainable"
-local IItemDrawable = require "rendering.IItemDrawable"
+local IGuiIcon = require "gui.IGuiIcon"
 ------------------------------ Helper Methods ------------------------------
 
 ------------------------------ Constructor ------------------------------
-local Item = class("Item", Thing):include(IContainable, IItemDrawable)
+local Item = class("Item", Thing):include(IContainable, IGuiIcon)
 function Item:init(id, parent)
 	Thing.init(self, id)
 	self.parent = parent

@@ -1,5 +1,7 @@
 -- This file is part of SUIT, copyright (c) 2016 Matthias Richter
 
+local Game = require "core.Game"
+
 local NONE = {}
 local BASE = (...):match('(.-)[^%.]+$')
 local default_theme = require(BASE..'theme')
@@ -23,6 +25,8 @@ function suit.new(theme)
 		Checkbox = require(BASE.."checkbox"),
 		Input = require(BASE.."input"),
 		Slider = require(BASE.."slider"),
+		
+		Image = require(BASE.."image"),
 
 		layout = require(BASE.."layout").new(),
 	}, suit)
@@ -188,7 +192,10 @@ function suit:enterFrame()
 	local m1, m2 = love.mouse.isDown(1), love.mouse.isDown(2) 	--------------
 	local b = (m1 and 1 or 0) + (m2 and 2 or 0)					--------------
 	if b == 0 then b = false end								--------------
-	self:updateMouse(love.mouse.getX(), love.mouse.getY(), b)	--------------
+--	self:updateMouse(love.mouse.getX(), love.mouse.getY(), b)	--------------
+	--TODO: fetch GUI scale correctly.
+	local s = Game.graphics.GUI_SCALE
+	self:updateMouse(love.mouse.getX()/s, love.mouse.getY()/s, b)	--------------
 	self.key_down, self.textchar = nil, ""
 	self:grabKeyboardFocus(NONE)
 	self.hit = nil

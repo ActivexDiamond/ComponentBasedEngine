@@ -3,6 +3,7 @@ local Mixins = require "libs.Mixins"
 ------------------------------ Setup ------------------------------
 local IMultiContainer = Mixins("IMultiContainer")
 function IMultiContainer:__postInit()
+	self.children = self.children or {}
 	self:_onUpdate()
 end
 
@@ -56,7 +57,10 @@ function IMultiContainer:getChild(i) return self.children[i] end
 function IMultiContainer:_setChildren(c)
 	if c.instanceof then c = {c} end
 	self:applyOnChildren(function(k, v) v:_setParent(nil) end)
-	self.children = c
+	
+	for i = 1, #self.children do self.children[i] = nil end
+	for i = 1, #c do self.children[i] = c[i] end
+	
 	if c then self:applyOnChildren(function(k, v) v:_setParent(self) end) end
 end
 
@@ -69,7 +73,7 @@ end
 function IMultiContainer:_addChild(c)
 	if c then
 		c:_setParent(self)
-		self.children[#self.children] = c
+		self.children[#self.children + 1] = c
 	end	
 end
 

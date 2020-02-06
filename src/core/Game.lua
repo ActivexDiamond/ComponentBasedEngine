@@ -9,7 +9,7 @@ local Game = class("Game")
 function Game:init()
 	love.physics.setMeter(1)
 	self.world = love.physics.newWorld(Game.GRAVITY_X, Game.GRAVITY_Y)
-	
+	self.player = nil	--TODO
 	self.timer = Timer()
 end
 

@@ -5,7 +5,6 @@ local IGuiElement = require "gui.IGuiElement"
 local IGuiIcon = Mixins("IGuiIcon", IGuiElement)--, IDrawable)
 function IGuiIcon:__postInit()
 	self.gui = false
-	print("postInit IGuiIcon")
 end
 
 ------------------------------ API ------------------------------

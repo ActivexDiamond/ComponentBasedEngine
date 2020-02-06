@@ -48,12 +48,10 @@ end
 
 
 ------------------------------ Callbacks ------------------------------
-function Inventory:_onChildUpdate(child, msg, index, hit)
-	if self.child and self.child:getAmount() == 0 then
-		self:_setChild(nil)
-	end
-	if msg and msg == 'hit' then
-		print("got pressed by: " .. index .. " with: " .. hit) 
+function Inventory:_onChildUpdate(child, msg, index)
+	if msg then
+		if msg == 'LMB' then self:_onLMB(child, index)
+		elseif msg == 'RMB' then self:_onRMB(child, index) end
 	end
 end
 
@@ -62,6 +60,21 @@ end
 ------------------------------ Filter-Related Methods ------------------------------
 
 ------------------------------ Internals ------------------------------
+function Inventory:_onLMB(slot, index)
+	local mouseSlot = Game.player:getMouseSlot()
+	if mouseSlot:getItemStack() then
+	
+	elseif slot:getItemStack() then
+		print(mouseSlot:combine(slot))
+	end
+	print('#', #Game.player:getMouseInv().children)
+	print('mouse', mouseSlot:getItemStack():getItem(), mouseSlot:getItemStack():getAmount())
+	print('slot', slot:getItemStack():getItem(), slot:getItemStack():getAmount())
+end
+
+function Inventory:_onRMB(child, index)
+
+end
 
 ------------------------------ Getters / Setters ------------------------------
 --local function getCapItem(item) return item:getMaxStack() end

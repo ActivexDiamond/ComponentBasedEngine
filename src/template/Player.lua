@@ -6,6 +6,9 @@ local IMeleeAttack = require "behavior.IMeleeAttack"
 local MeleeWeapon = require "template.MeleeWeapon"
 local IBoundingBox = require "behavior.IBoundingBox"
 
+local Slot = require "inv.Slot"
+local Inventory = require "inv.Inventory"
+
 local IEventHandler = require "evsys.IEventHandler"
 local KeypressEvent = require "evsys.input.KeypressEvent"
 local Keybinds  = require "core.Keybinds"
@@ -18,7 +21,8 @@ local Keybinds  = require "core.Keybinds"
 local Player = class("Player", Mob):include(IHealth, IEventHandler, IMeleeAttack)
 function Player:init(x, y)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
 	Mob.init(self, "player", x, y)
-	self.weapon = MeleeWeapon("swordStone")
+	self.weapon = MeleeWeapon("stone|sword")
+	self.mouseInv = Inventory{slots = Slot{noBg = true, noHit = true}}
 end
 
 
@@ -48,4 +52,7 @@ Player:attach(KeypressEvent, function(self, e)
 	if e.k == 'x' then self:attack(self.weapon) end
 end)
 
+------------------------------ Getters / Setters ------------------------------
+function Player:getMouseInv() return self.mouseInv end
+function Player:getMouseSlot() return self.mouseInv:getChild(1) end
 return Player

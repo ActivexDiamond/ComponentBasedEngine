@@ -69,6 +69,7 @@ function love.load()
 	end	
 	
 	player = Player(12, 12)
+	Game.player = player
 	zombie = Zombie(16, 12)
 --	zombie1 = Zombie(17, 12)
 --	zombie2 = Zombie(18, 12)	
@@ -247,16 +248,14 @@ local inv = Inventory{x = 200, y = 200,
 		cols = 10, rows = 4, 
 		slots = slots}
 
-local mouseInv = Inventory{slots = Slot{noBg = true, noHit = true}}
+local coalStack = ItemStack(Item("coal|oredrop"), 64)
+local mouseInv = Inventory{slots = Slot{itemStack = coalStack,
+		noBg = true, noHit = true}}
 
-print('item',  stack:getItem(), 'amount', stack:getAmount(), 'parent', stack:getParent())
-print('itemStack', slot:getItemStack(), 'capacity', slot:getCapacity(), 'parent', slot:getParent())
---print(slot.child.child:getMaxStack())
-local dir = 0;
+
 function love.update(dt)
 	local s = Game.graphics.GUI_SCALE
 	mouseInv:setPos(love.mouse.getX()/s, love.mouse.getY()/s)
---	mouseInv:setPos(love.mouse.getX(), love.mouse.getY())
 
 	Game:tick(dt)
 
@@ -309,8 +308,8 @@ function love.draw()
 	local str = string.format("Player.extraRemaining: %d", ej) 
 	g.print(str, 40, 160)
 	
-	str = string.format("grid: %d, %d", Game:scaledSnap(mousex) / Game.GRID, 
-		Game:scaledSnap(mousey) / Game.GRID)
+	str = string.format("grid: %d, %d", Game:scaledSnap(love.mouse.getX()) / Game.GRID, 
+		Game:scaledSnap(love.mouse.getY()) / Game.GRID)
 	g.print(str, 40, 180)
 	
 	g.scale(Game.graphics.GUI_SCALE)
@@ -325,11 +324,5 @@ function love.keypressed(k, code, isrepeat)
 	Evsys:queue(KeypressEvent(k))
 	clicks = clicks + 1
 end
-
-mousex, mousey = 0, 0
-function love.mousemoved(x, y, dx, dy, istouch)
-	mousex, mousey = x, y
-end
-   
     
 --]]

@@ -13,7 +13,6 @@ function IGuiElement:__postInit()
 		self.gui.y = self.gui.y or sh/2
 		self.gui.padX, self.gui.padY = 0, 0
 	end
-	print("postInit IGuiElement")
 end
 
 ------------------------------ API ------------------------------

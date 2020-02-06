@@ -27,6 +27,9 @@ Filter._DEFAULT_WHITE = Filter.ALL
 Filter._DEFAULT_BLACK = Filter.NONE
 
 ------------------------------ API ------------------------------
+function Filter:check(dest, n)
+	return true	--TODO proper filter check
+end
 
 ------------------------------ Getters/Setters ------------------------------
 

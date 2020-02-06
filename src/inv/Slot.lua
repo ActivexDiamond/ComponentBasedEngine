@@ -15,8 +15,9 @@ function Slot:init(t)
 	self.inFilter = t.inFilter or Filter()
 	self.outFilter = t.outFilter or Filter()
 	self.noBg, self.noHit = t.noBg, t.noHit 
-	self:_setChild(t.itemStack)
+	self:setItemStack(t.itemStack)
 	self:_setParent(t.parent)			--Inv, or nil.
+	print(self:getItemStack() and self:getItemStack():getItem())
 end
 
 ------------------------------ GUI Methods ------------------------------
@@ -37,13 +38,16 @@ function Slot:tickGui(gui, pos, index)
 	if not self.noBg and not self.noHit then
 		local hit = gui:Button("", {id = index}, pos()).hit
 		if self.parent and hit then 
-			self.parent:_onChildUpdate(self, 'hit', index, hit) 
+			if hit == 1 then self.parent:_onChildUpdate(self, 'LMB', index) end
+			if hit == 2 then self.parent:_onChildUpdate(self, 'RMB', index) end
+			 
 		end
 	end
 end
 
 ------------------------------ Access Methods ------------------------------
-local function combineItemStack(its, n, self)
+local function combineItemStack(self, its, n)
+	print("combineItemStack", self, its, n)
 	if not self:mayCombine(its, n) then return 0 end
 	if self.child then
 		n = self:_constrainToMax(n)
@@ -63,14 +67,17 @@ local function combineItemStack(its, n, self)
 	end
 end
 
-local function combineSlot(slot, n, self)
+local function combineSlot(self, slot, n)
+	print("combineSlot", self, slot, n)
 	if slot:mayBeCombined(self, n) then
-		return combineItemStack(slot:getItemStack(), n, self)
+		return combineItemStack(self, slot:getItemStack(), n)
 	end
 end
 
 function Slot:combine(from, n)
-	return utils.ovld({from, n, self},
+	print("combine", from, n)
+--	return utils.ovld({from, n, self},
+	return utils.ovld({self, from, n},
 			combineItemStack, {ItemStack},
 			combineSlot, {Slot}
 	)
@@ -131,9 +138,9 @@ function Slot:_constrainToMax(n)
 	return math.min(n or cap, cap)				
 end
 
-function Slot:_constrainToMin(n)
-	return math.min(n or self.amount, self.amount)				
-end
+--function Slot:_constrainToMin(n)
+--	return math.min(n or self.amount, self.amount)				
+--end
 ------------------------------ Getters / Setters ------------------------------
 local function getCapItem(item) return item:getMaxStack() end
 local function getCapItemStack(its) return its.child:getMaxStack() end

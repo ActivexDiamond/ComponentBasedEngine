@@ -6,6 +6,8 @@ local IMeleeAttack = require "behavior.IMeleeAttack"
 local MeleeWeapon = require "template.MeleeWeapon"
 local IBoundingBox = require "behavior.IBoundingBox"
 
+local Item = require "template.Item"
+local ItemStack = require "inv.ItemStack"
 local Slot = require "inv.Slot"
 local Inventory = require "inv.Inventory"
 
@@ -13,7 +15,7 @@ local IEventHandler = require "evsys.IEventHandler"
 local KeypressEvent = require "evsys.input.KeypressEvent"
 local Keybinds  = require "core.Keybinds"
 
---local Game = require "core.Game"
+local Game = require "core.Game"
 --local Registry = require "istats.Registry"
 
 
@@ -22,7 +24,16 @@ local Player = class("Player", Mob):include(IHealth, IEventHandler, IMeleeAttack
 function Player:init(x, y)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
 	Mob.init(self, "player", x, y)
 	self.weapon = MeleeWeapon("stone|sword")
-	self.mouseInv = Inventory{slots = Slot{noBg = true, noHit = true}}
+	--TODO: Proper player inv / mouseSlot.
+--	self.mouseInv = Inventory{slots = Slot{itemStack = ItemStack(Item("coal|oredrop"), 64),
+--			noBg = true, noHit = true}}
+	local coalStack = ItemStack(Item("coal|oredrop"), 48)
+	local mouseInv = Inventory{slots = Slot{--itemStack = coalStack,
+			noBg = true, noHit = true}}
+	mouseInv:setPos(30, 30)
+	self.mouseInv = mouseInv
+	
+	Game.player = self
 end
 
 
@@ -36,11 +47,21 @@ function Player:tick(dt)
 	if k.isDown(Keybinds.RIGHT) then dir = dir +  Player.RIGHT end
 	local sprint = k.isDown(Keybinds.SPRINT)
 	self:_walk(dir, sprint, dt)
+	
+	--TODO: Proper player inv / mouseSlot.
+	local s = Game.graphics.GUI_SCALE
+	self.mouseInv:setPos(love.mouse.getX()/s, love.mouse.getY()/s)
+	self.mouseInv:tickGui()
 end
 
 function Player:draw(g)
 	g.setColor(0, 0, 1, 1)
 	g.polygon('fill', self.body:getWorldPoints(self.shape:getPoints()))
+end	
+
+function Player:drawGui()
+--	TODO: Proper player inv / mouseSlot.
+	self.mouseInv:drawGui()
 end	
 
 ------------------------------ @Callback ------------------------------

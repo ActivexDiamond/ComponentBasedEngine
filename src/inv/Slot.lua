@@ -28,7 +28,7 @@ function Slot:tickGui(gui, pos, index)
 		local n = self.child:getAmount()
 		if n > 1 then
 			local txtH = love.graphics.getFont():getHeight()
-			gui:Label(n, x, y + pos.h - txtH)
+			gui:TextSign(n, x, y + pos.h - txtH)
 		end
 		self.child:getItem():tickGui(gui, pos)
 	end
@@ -47,35 +47,40 @@ end
 
 ------------------------------ Access Methods ------------------------------
 local function combineItemStack(self, its, n)
-	print("combineItemStack", self, its, n)
-	if not self:mayCombine(its, n) then return 0 end
+	if DEBUG.INV_DETAILS then print("combineItemStack", self, its, n) end
+	if not self:mayCombine(its, n) then return -1 end
 	if self.child then
 		n = self:_constrainToMax(n)
-		return self.child:combine(its, n)
+		if DEBUG.INV_DETAILS then print('self.child.child', self.child.child, 'its.child', its.child) end
+		return n == 0 and 0 or self.child:combine(its, n)
 	else
+		if DEBUG.INV_DETAILS then print('if not self.child') end
 		local cap = self:getCapacity(its)
 		local a = its:getAmount()
 		n = its:_constrainToMin(n)
 		if n == a and cap >= a then
+			its:_setParent(nil)
 			self:_setChild(its)
+			if DEBUG.INV_DETAILS then print('a', a) end
 			return a
 		else
 			local dif = its:sub(n)
 			self:_setChild( ItemStack(its:cloneItem(), dif) )
+			if DEBUG.INV_DETAILS then print('dif', dif) end
 			return dif
 		end		
 	end
 end
 
 local function combineSlot(self, slot, n)
-	print("combineSlot", self, slot, n)
+	if DEBUG.INV_DETAILS then print("combineSlot", self, slot, n) end
 	if slot:mayBeCombined(self, n) then
 		return combineItemStack(self, slot:getItemStack(), n)
 	end
 end
 
 function Slot:combine(from, n)
-	print("combine", from, n)
+	if DEBUG.INV_DETAILS then print("combine", from, n) end
 --	return utils.ovld({from, n, self},
 	return utils.ovld({self, from, n},
 			combineItemStack, {ItemStack},

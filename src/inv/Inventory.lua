@@ -62,17 +62,36 @@ end
 ------------------------------ Internals ------------------------------
 function Inventory:_onLMB(slot, index)
 	local mouseSlot = Game.player:getMouseSlot()
+											-- mouse	;	slot
 	if mouseSlot:getItemStack() then
-	
-	elseif slot:getItemStack() then
-		print(mouseSlot:combine(slot))
-	end
-	print('#', #Game.player:getMouseInv().children)
-	print('mouse', mouseSlot:getItemStack():getItem(), mouseSlot:getItemStack():getAmount())
-	print('slot', slot:getItemStack():getItem(), slot:getItemStack():getAmount())
+		if slot:getItemStack() then			--	1	;	1
+			if slot:combine(mouseSlot) == -1 then
+				local mStack, sStack = mouseSlot:getItemStack(), slot:getItemStack()
+				mouseSlot:_setChild(sStack)
+				slot:_setChild(mStack)
+			end
+		else slot:combine(mouseSlot) end	--	1	;	0
+	elseif slot:getItemStack() then			--	0	;	1
+		mouseSlot:combine(slot)
+	end										--	0	;	0
 end
 
-function Inventory:_onRMB(child, index)
+function Inventory:_onRMB(slot, index)
+	local mouseSlot = Game.player:getMouseSlot()
+											-- mouse	;	slot
+	if mouseSlot:getItemStack() then
+		if slot:getItemStack() then			--	1	;	1
+			if slot:combine(mouseSlot, 1) == -1 then
+				local mStack, sStack = mouseSlot:getItemStack(), slot:getItemStack()
+				mouseSlot:_setChild(sStack)
+				slot:_setChild(mStack)
+			end
+		else slot:combine(mouseSlot, 1) end	--	1	;	0
+	elseif slot:getItemStack() then			--	0	;	1
+		local a = slot:getItemStack():getAmount()
+		local take = a % 2 == 0 and a/2 or math.floor(a/2) + 1
+		mouseSlot:combine(slot, take)
+	end										--	0	;	0
 
 end
 

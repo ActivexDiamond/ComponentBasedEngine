@@ -20,7 +20,7 @@ ItemStack.DEFAULT_AMOUNT = 1
 ------------------------------ Access Methods ------------------------------
 
 function ItemStack:combine(its, n)
-	if not self.item:equals(its:getItem()) then return 0 end 	
+	if not self.child:equals(its:getItem()) then return -1 end 	
 	return self:add(its:sub(n))
 end
 
@@ -36,7 +36,7 @@ function ItemStack:sub(n)
 	n = self:_constrainToMin(n)
 	self.amount = self.amount - n
 	self:_onUpdate()
-	return self.amount + n
+	return n
 end
 
 ------------------------------ Internals ------------------------------

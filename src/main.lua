@@ -239,7 +239,9 @@ slots = {
 	Slot{itemStack = ItemStack(Item("oak|log"), 4)},
 	Slot{itemStack = ItemStack(Item("wood|stick"), 2)},
 	Slot{itemStack = ItemStack(Item("coal|oredrop"), 64)},
-	Slot{itemStack = ItemStack(Item("iron|ingot"))},
+	Slot{itemStack = ItemStack(Item("coal|oredrop"), 16)},
+	Slot{itemStack = ItemStack(Item("coal|oredrop"), 16)},
+	Slot{itemStack = ItemStack(Item("iron|ingot"), 3)},
 	Slot{itemStack = ItemStack(Item("iron|plate"))},
 	Slot{itemStack = ItemStack(Item("iron|stick"))},
 }
@@ -248,15 +250,11 @@ local inv = Inventory{x = 200, y = 200,
 		cols = 10, rows = 4, 
 		slots = slots}
 
-local coalStack = ItemStack(Item("coal|oredrop"), 64)
-local mouseInv = Inventory{slots = Slot{itemStack = coalStack,
-		noBg = true, noHit = true}}
-
+--local coalStack = ItemStack(Item("coal|oredrop"), 64)
+--local mouseInv = Inventory{slots = Slot{itemStack = coalStack,
+--		noBg = true, noHit = true}}
 
 function love.update(dt)
-	local s = Game.graphics.GUI_SCALE
-	mouseInv:setPos(love.mouse.getX()/s, love.mouse.getY()/s)
-
 	Game:tick(dt)
 
 	player:tick(dt)
@@ -264,7 +262,7 @@ function love.update(dt)
 --	zombie1:tick(dt)
 --	zombie2:tick(dt)
 	inv:tickGui()
-	mouseInv:tickGui()
+--	mouseInv:tickGui()
 	Scheduler:tick(dt)
 	Evsys:poll()
 end
@@ -287,6 +285,7 @@ function love.draw()
 	
 	g.setColor(1, 1, 1, 1)
 	g.scale(1/Game.MS)
+	
 	local vx, vy = player.body:getLinearVelocity()
 	local str = string.format("vx: %f | vy: %f ", vx, vy) 
 	g.print(str, 40, 80)
@@ -314,7 +313,7 @@ function love.draw()
 	
 	g.scale(Game.graphics.GUI_SCALE)
 	inv:drawGui()
-	mouseInv:drawGui()
+	player:drawGui()
 	g.scale(1/Game.graphics.GUI_SCALE)
 	
 end

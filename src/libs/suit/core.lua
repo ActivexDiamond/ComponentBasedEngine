@@ -26,7 +26,8 @@ function suit.new(theme)
 		Input = require(BASE.."input"),
 		Slider = require(BASE.."slider"),
 		
-		Image = require(BASE.."image"),
+		Image = require(BASE.."image"),			-----------------------
+		TextSign = require(BASE.."textSign"),			-----------------------
 
 		layout = require(BASE.."layout").new(),
 	}, suit)
@@ -128,7 +129,7 @@ function suit:mouseReleasedOn(id)
 end
 
 function suit:updateMouse(x, y, button_down)
-	self.mouse_x, self.mouse_y = x,y
+	self.mouse_x, self.mouse_y = x, y
 	if button_down ~= nil then
 		self.mouse_button_down_previous = self.mouse_button_down 	--------
 		self.mouse_button_down = button_down

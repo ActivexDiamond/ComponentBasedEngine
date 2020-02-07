@@ -36,6 +36,9 @@ end
 ------------------------------ Getters/Setters ------------------------------
 function IContainer:getParent() return self.parent end
 function IContainer:_setParent(p)
+	if self.parent then
+		self.parent:_removeChild()
+	end
 	self.parent = p	
 end
 
@@ -49,7 +52,8 @@ function IContainer:_setChild(c)
 end
 
 function IContainer:_removeChild()
-	self:_setChild(nil)
+	self.child.parent = nil
+	self.child = nil
 end
 
 return IContainer

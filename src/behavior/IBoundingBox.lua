@@ -1,5 +1,4 @@
 local Mixins = require "libs.Mixins"
-local Tables = require "libs.Tables"
 
 ------------------------------ Private Methods ------------------------------
 local function getShape(self, s, a, b, c)

@@ -52,7 +52,7 @@ local function combineItemStack(self, its, n)
 	if self.child then
 		n = self:_constrainToMax(n)
 		if DEBUG.INV_DETAILS then print('self.child.child', self.child.child, 'its.child', its.child) end
-		return n == 0 and 0 or self.child:combine(its, n)
+		return self.child:combine(its, n)
 	else
 		if DEBUG.INV_DETAILS then print('if not self.child') end
 		local cap = self:getCapacity(its)
